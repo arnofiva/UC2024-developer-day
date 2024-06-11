@@ -31,6 +31,9 @@ class DownloadStore extends Accessor {
   @property()
   tool: ExtentTool;
 
+  @property()
+  area: Geometry | null;
+
   constructor(props: DownloadStoreProperties) {
     super(props);
 
@@ -73,22 +76,12 @@ class DownloadStore extends Accessor {
 
       const highlightHandle = reactiveUtils.watch(
         getGeometry,
-        debounce(async (geometry) => {
-          if (geometry == null) {
-            highlights?.remove();
-            return;
+        (geometry) => {
+          if (geometry) {
+            this.area = geometry;
+            this.highlightArea();
           }
-
-          const layerView = this.buildingsLayerView;
-          const query = layerView.createQuery();
-          query.geometry = geometry;
-          query.spatialRelationship = "intersects";
-
-          const { features } = await layerView.queryFeatures(query);
-          highlights?.remove();
-
-          highlights = layerView.highlight(features);
-        }),
+        },
         {
           initial: true,
         },
@@ -97,7 +90,7 @@ class DownloadStore extends Accessor {
       return {
         remove: () => {
           highlightHandle.remove();
-          highlights?.remove();
+          this.removeHighlight();
         },
       };
     };
@@ -107,6 +100,30 @@ class DownloadStore extends Accessor {
 
   start() {
     this.tool.start();
+  }
+
+  private currentHighlight: IHandle = { remove: () => {} };
+
+  highlightArea = debounce(async () => {
+    const geometry = this.area;
+    if (geometry == null) {
+      this.removeHighlight();
+      return;
+    }
+
+    const layerView = this.buildingsLayerView;
+    const query = layerView.createQuery();
+    query.geometry = geometry;
+    query.spatialRelationship = "intersects";
+
+    const { features } = await layerView.queryFeatures(query);
+    this.removeHighlight();
+
+    this.currentHighlight = layerView.highlight(features);
+  });
+
+  removeHighlight() {
+    this.currentHighlight.remove();
   }
 }
 

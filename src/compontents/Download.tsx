@@ -26,7 +26,7 @@ class Download extends Widget<DownloadProperties> {
       <div>
         <calcite-card id="download">
           <calcite-button id="createButton" onclick={() => this.store.start()}>
-            Select extent
+            Select download extent
           </calcite-button>
           <calcite-button id="cancelButton" style="display:none">
             Cancel

@@ -5,7 +5,9 @@ import {
 
 import { tsx } from "@arcgis/core/widgets/support/widget";
 
-import { whenOnce } from "@arcgis/core/core/reactiveUtils";
+import { watch, whenOnce } from "@arcgis/core/core/reactiveUtils";
+import FeatureFilter from "@arcgis/core/layers/support/FeatureFilter";
+import Editor from "@arcgis/core/widgets/Editor";
 import Expand from "@arcgis/core/widgets/Expand";
 import Fullscreen from "@arcgis/core/widgets/Fullscreen";
 import AppStore from "../stores/AppStore";
@@ -36,6 +38,7 @@ class App extends Widget<AppProperties> {
         content: time,
         group: "top-right",
         expanded: true,
+        expandIcon: time.store.timeSlider.icon,
       }),
       "top-right",
     );
@@ -47,13 +50,49 @@ class App extends Widget<AppProperties> {
         store,
       });
 
-      view.ui.add(
-        new Expand({
+      const downloadExpand = new Expand({
+        view,
+        content: download,
+        group: "top-right",
+        expandIcon: "download",
+      });
+      view.ui.add(downloadExpand, "top-right");
+
+      watch(
+        () => downloadExpand.expanded,
+        (expanded) => {
+          if (expanded) {
+            store.highlightArea();
+          } else {
+            store.removeHighlight();
+          }
+        },
+      );
+
+      const editorExpand = new Expand({
+        view,
+        content: new Editor({
           view,
-          content: download,
-          group: "top-right",
         }),
-        "top-right",
+        group: "top-right",
+      });
+
+      view.ui.add(editorExpand, "top-right");
+
+      watch(
+        () => editorExpand.expanded,
+        (expanded) => {
+          const geometry = store.area;
+
+          if (expanded && geometry) {
+            store.buildingsLayerView.filter = new FeatureFilter({
+              geometry,
+              spatialRelationship: "disjoint",
+            });
+          } else {
+            store.buildingsLayerView.filter = null as any;
+          }
+        },
       );
     });
   }
