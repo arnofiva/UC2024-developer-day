@@ -23,11 +23,28 @@
       href="./icon-32.svg"
     />
 
+    <link
+      href="https://cdn.jsdelivr.net/npm/prismjs@v1.x/themes/prism.css"
+      rel="stylesheet"
+    />
+
     <link rel="stylesheet" href="/src/general.scss" />
   </head>
   <body>
     <div id="app"></div>
     <div id="viewDiv"></div>
+
+    <div class="code-snippet" id="downloadCodeSnippet">
+      <pre><code class="language-js">const {features} = await buildingLayer.queryFeatures();
+const mesh = features[0].geometry;
+        
+const buffer = await mesh.toBinaryGLTF();
+downloadBufferAsFile("model.glb", buffer, "model/gltf-binary");</code></pre>
+    </div>
+
     <script type="module" src="/src/main.ts"></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@v1.x/components/prism-core.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/prismjs@v1.x/plugins/autoloader/prism-autoloader.min.js"></script>
   </body>
 </html>

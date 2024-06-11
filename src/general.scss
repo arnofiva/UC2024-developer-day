@@ -40,3 +40,46 @@ calcite-navigation-logo {
   right: 0px;
   z-index: 1;
 }
+
+/* Code Snippet */
+
+:root {
+  --code-height: 500px;
+  --code-width: 750px;
+  --code-width-close: -750px;
+}
+
+.code-snippet {
+  font-size: 1.1em;
+  position: absolute;
+  z-index: 999;
+  left: 0;
+  bottom: 0;
+  padding: 0;
+  margin: 0;
+  width: var(--code-width);
+  margin-left: var(--code-width-close);
+}
+
+pre[class*="language-"] {
+  margin-bottom: 16px;
+}
+
+.token.operator,
+.token.entity,
+.token.url,
+.language-css .token.string,
+.style .token.string {
+  // color: #9a6e3a;
+
+  background: none !important;
+}
+
+* {
+  --calcite-ui-brand: rgb(70, 70, 248);
+  // --calcite-ui-brand: rgb(55, 200, 100);
+  --calcite-ui-brand-hover: rgb(34, 34, 247);
+  // --calcite-ui-brand-press: rgb(0, 100, 0);
+
+  --calcite-ui-danger: rgb(248, 70, 70);
+}

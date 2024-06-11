@@ -9,10 +9,19 @@ import "@esri/calcite-components/dist/components/calcite-card";
 import "@esri/calcite-components/dist/components/calcite-label";
 import "@esri/calcite-components/dist/components/calcite-switch";
 
+import { createToggle } from "../snippet";
 import DownloadStore from "../stores/DownloadStore";
 import { Widget } from "./Widget";
 
 type DownloadProperties = Pick<Download, "store">;
+
+const snippetToggle = createToggle("downloadCodeSnippet");
+
+window.onkeydown = (e: KeyboardEvent) => {
+  if (e.key === "c") {
+    snippetToggle();
+  }
+};
 
 @subclass("arcgis-core-template.Download")
 class Download extends Widget<DownloadProperties> {
