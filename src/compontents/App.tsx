@@ -5,8 +5,11 @@ import {
 
 import { tsx } from "@arcgis/core/widgets/support/widget";
 
+import { whenOnce } from "@arcgis/core/core/reactiveUtils";
+import Expand from "@arcgis/core/widgets/Expand";
 import Fullscreen from "@arcgis/core/widgets/Fullscreen";
 import AppStore from "../stores/AppStore";
+import Download from "./Download";
 import Header from "./Header";
 import Time from "./Time";
 import { Widget } from "./Widget";
@@ -27,9 +30,32 @@ class App extends Widget<AppProperties> {
       store: this.store.timeStore,
     });
 
-    view.ui.add(time, "top-right");
+    view.ui.add(
+      new Expand({
+        view,
+        content: time,
+        group: "top-right",
+        expanded: true,
+      }),
+      "top-right",
+    );
 
     view.ui.add(this.store.timeStore.timeSlider, "manual");
+
+    whenOnce(() => this.store.downloadStore).then((store) => {
+      const download = new Download({
+        store,
+      });
+
+      view.ui.add(
+        new Expand({
+          view,
+          content: download,
+          group: "top-right",
+        }),
+        "top-right",
+      );
+    });
   }
 
   render() {

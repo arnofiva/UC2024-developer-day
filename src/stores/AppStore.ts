@@ -5,7 +5,9 @@ import {
   subclass,
 } from "@arcgis/core/core/accessorSupport/decorators";
 import { whenOnce } from "@arcgis/core/core/reactiveUtils";
+import SceneLayer from "@arcgis/core/layers/SceneLayer";
 import SceneView from "@arcgis/core/views/SceneView";
+import DownloadStore from "./DownloadStore";
 import TimeStore from "./TimeStore";
 import UserStore from "./UserStore";
 
@@ -25,6 +27,9 @@ class AppStore extends Accessor {
   @property({ constructOnly: true })
   timeStore: TimeStore;
 
+  @property({})
+  downloadStore: DownloadStore;
+
   constructor(props: AppStoreProperties) {
     super(props);
 
@@ -35,6 +40,17 @@ class AppStore extends Accessor {
       document.title = map.portalItem.title;
 
       await map.loadAll();
+
+      const buildingsLayer = map.allLayers.find(
+        (l) => l.type === "scene" && l.title === "Buildings in Zurich",
+      ) as SceneLayer;
+
+      const buildingsLayerView = await this.view.whenLayerView(buildingsLayer);
+
+      this.downloadStore = new DownloadStore({
+        view: props.view,
+        buildingsLayerView,
+      });
     });
   }
 }

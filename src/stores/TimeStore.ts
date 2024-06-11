@@ -22,6 +22,9 @@ class TimeStore extends Accessor {
   @property()
   enabled = false;
 
+  @property()
+  showTimeSlider = true;
+
   constructor(props: TimeStoreProperties) {
     super(props);
 
@@ -50,6 +53,14 @@ class TimeStore extends Accessor {
       },
     });
 
+    const updateTimeSlider = () => {
+      if (this.enabled && this.showTimeSlider) {
+        timeDiv.classList.remove("hide");
+      } else {
+        timeDiv.classList.add("hide");
+      }
+    };
+
     watch(
       () => this.enabled,
       (enabled) => {
@@ -58,13 +69,13 @@ class TimeStore extends Accessor {
             start: new Date("2020-01-21"),
             end: new Date("2020-01-21"),
           });
-          timeDiv.classList.remove("hide");
-        } else {
-          timeDiv.classList.add("hide");
         }
+        updateTimeSlider();
       },
       { initial: true },
     );
+
+    watch(() => this.showTimeSlider, updateTimeSlider);
   }
 }
 
