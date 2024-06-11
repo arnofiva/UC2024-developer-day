@@ -14,6 +14,7 @@ import AppStore from "../stores/AppStore";
 import Download from "./Download";
 import Header from "./Header";
 import Time from "./Time";
+import Viewshed from "./Viewshed";
 import { Widget } from "./Widget";
 
 type AppProperties = Pick<App, "store">;
@@ -99,6 +100,18 @@ class App extends Widget<AppProperties> {
           }
         },
       );
+
+      const viewshedExpand = new Expand({
+        view,
+        content: new Viewshed({
+          store: this.store.viewshedStore,
+        }),
+        expandIcon: "viewshed",
+        // expandIcon: "measure-building-height-shadow",
+        group: "top-right",
+      });
+
+      view.ui.add(viewshedExpand, "top-right");
     });
   }
 

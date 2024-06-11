@@ -10,6 +10,7 @@ import SceneView from "@arcgis/core/views/SceneView";
 import DownloadStore from "./DownloadStore";
 import TimeStore from "./TimeStore";
 import UserStore from "./UserStore";
+import ViewshedStore from "./ViewshedStore";
 
 type AppStoreProperties = Pick<AppStore, "view">;
 
@@ -27,6 +28,9 @@ class AppStore extends Accessor {
   @property({ constructOnly: true })
   timeStore: TimeStore;
 
+  @property({ constructOnly: true })
+  viewshedStore: ViewshedStore;
+
   @property({})
   downloadStore: DownloadStore;
 
@@ -34,6 +38,8 @@ class AppStore extends Accessor {
     super(props);
 
     this.timeStore = new TimeStore({ view: props.view });
+
+    this.viewshedStore = new ViewshedStore({ view: props.view });
 
     whenOnce(() => this.map).then(async (map) => {
       await map.load();
