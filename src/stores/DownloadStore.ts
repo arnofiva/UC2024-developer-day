@@ -8,6 +8,7 @@ import { debounce } from "@arcgis/core/core/promiseUtils";
 import * as reactiveUtils from "@arcgis/core/core/reactiveUtils";
 import { Extent, Geometry, Point, Polygon } from "@arcgis/core/geometry";
 import GraphicsLayer from "@arcgis/core/layers/GraphicsLayer";
+import FeatureFilter from "@arcgis/core/layers/support/FeatureFilter";
 import { FillSymbol3DLayer, PolygonSymbol3D } from "@arcgis/core/symbols";
 import StylePattern3D from "@arcgis/core/symbols/patterns/StylePattern3D";
 import SceneView from "@arcgis/core/views/SceneView";
@@ -125,6 +126,19 @@ class DownloadStore extends Accessor {
   removeHighlight() {
     this.currentHighlight.remove();
   }
+
+  filterArea = debounce(async () => {
+    const geometry = this.area;
+    if (geometry == null) {
+      this.removeHighlight();
+      return;
+    }
+
+    this.buildingsLayerView.filter = new FeatureFilter({
+      geometry,
+      spatialRelationship: "intersects",
+    });
+  });
 }
 
 @subclass()

@@ -11,7 +11,7 @@ console.log(`Using ArcGIS Maps SDK for JavaScript v${kernel.fullVersion}`);
 
 const params = new URLSearchParams(document.location.search.slice(1));
 
-const webSceneId = params.get("webscene") || "5e8fbb7e4ad244d5ae60ca09f21aad63";
+const webSceneId = params.get("webscene") || "951ae9874b354cb7a69f07fc58e2b2d9";
 
 const map = new WebScene({
   portalItem: {
@@ -25,16 +25,6 @@ const map = new WebScene({
 const view = new SceneView({
   container: "viewDiv",
   map,
-
-  camera: {
-    position: {
-      longitude: 8.57298074,
-      latitude: 47.39919367,
-      z: 888.12951,
-    },
-    heading: 333.71,
-    tilt: 62.09,
-  },
 });
 
 (window as any)["view"] = view;

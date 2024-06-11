@@ -32,15 +32,20 @@ class App extends Widget<AppProperties> {
       store: this.store.timeStore,
     });
 
-    view.ui.add(
-      new Expand({
-        view,
-        content: time,
-        group: "top-right",
-        expanded: true,
-        expandIcon: time.store.timeSlider.icon,
-      }),
-      "top-right",
+    const timeExpand = new Expand({
+      view,
+      content: time,
+      group: "top-right",
+      expanded: true,
+      expandIcon: time.store.timeSlider.icon,
+    });
+
+    view.ui.add(timeExpand, "top-right");
+
+    watch(
+      () => timeExpand.expanded,
+      (expanded) => (this.store.timeStore.showTimeSlider = expanded),
+      { initial: true },
     );
 
     view.ui.add(this.store.timeStore.timeSlider, "manual");
@@ -90,7 +95,7 @@ class App extends Widget<AppProperties> {
               spatialRelationship: "disjoint",
             });
           } else {
-            store.buildingsLayerView.filter = null as any;
+            // store.buildingsLayerView.filter = null as any;
           }
         },
       );

@@ -65,8 +65,8 @@ class Header extends Widget<HeaderProperties> {
         <calcite-navigation slot="header">
           <calcite-navigation-logo
             slot="logo"
-            heading="Zürich Urban Development"
-            description="UC 2024 - ArcGIS Maps SDK for JavaScript"
+            heading={this.store.map.portalItem.title}
+            description="ArcGIS Maps SDK for JavaScript"
             thumbnail="./icon-64.svg"
             onclick={() => {
               this.openScene();

@@ -9,7 +9,6 @@ import "@esri/calcite-components/dist/components/calcite-card";
 import "@esri/calcite-components/dist/components/calcite-label";
 import "@esri/calcite-components/dist/components/calcite-switch";
 
-import { watch } from "@arcgis/core/core/reactiveUtils";
 import TimeStore from "../stores/TimeStore";
 import { Widget } from "./Widget";
 
@@ -22,13 +21,7 @@ class Time extends Widget<TimeProperties> {
   @property()
   store: TimeStore;
 
-  postInitialize() {
-    watch(
-      () => this.visible,
-      (visible) => (this.store.showTimeSlider = visible),
-      { initial: true },
-    );
-  }
+  postInitialize() {}
 
   render() {
     const timeExtent = this.store.view.timeExtent;
