@@ -22,7 +22,14 @@ calcite-navigation-logo {
   display: none;
 }
 
-.player-loader {
+.time-slider {
+  position: absolute;
+  left: 5%;
+  right: 5%;
+  bottom: 20px;
+}
+
+.Time-loader {
   padding-top: 0px;
   padding-bottom: 20px;
 }

@@ -6,7 +6,7 @@ import {
 } from "@arcgis/core/core/accessorSupport/decorators";
 import { whenOnce } from "@arcgis/core/core/reactiveUtils";
 import SceneView from "@arcgis/core/views/SceneView";
-import PlayerStore from "./PlayerStore";
+import TimeStore from "./TimeStore";
 import UserStore from "./UserStore";
 
 type AppStoreProperties = Pick<AppStore, "view">;
@@ -23,20 +23,18 @@ class AppStore extends Accessor {
   userStore = new UserStore();
 
   @property({ constructOnly: true })
-  playerStore: PlayerStore;
+  timeStore: TimeStore;
 
   constructor(props: AppStoreProperties) {
     super(props);
 
-    this.playerStore = new PlayerStore({ view: props.view });
+    this.timeStore = new TimeStore({ view: props.view });
 
     whenOnce(() => this.map).then(async (map) => {
       await map.load();
       document.title = map.portalItem.title;
 
       await map.loadAll();
-
-      this.playerStore.slides = map.presentation.slides;
     });
   }
 }

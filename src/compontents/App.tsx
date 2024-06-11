@@ -5,11 +5,10 @@ import {
 
 import { tsx } from "@arcgis/core/widgets/support/widget";
 
-import { watch } from "@arcgis/core/core/reactiveUtils";
 import Fullscreen from "@arcgis/core/widgets/Fullscreen";
 import AppStore from "../stores/AppStore";
 import Header from "./Header";
-import Player from "./Player";
+import Time from "./Time";
 import { Widget } from "./Widget";
 
 type AppProperties = Pick<App, "store">;
@@ -22,28 +21,15 @@ class App extends Widget<AppProperties> {
   postInitialize(): void {
     const view = this.store.view;
     const fullscreen = new Fullscreen({ view });
-    view.ui.add(fullscreen, "top-right");
+    view.ui.add(fullscreen, "top-left");
 
-    const player = new Player({
-      store: this.store.playerStore,
+    const time = new Time({
+      store: this.store.timeStore,
     });
 
-    view.ui.add(player, "bottom-right");
+    view.ui.add(time, "top-right");
 
-    this.addHandles(
-      watch(
-        () => this.store.playerStore.state,
-        (state) => {
-          if (state === "animating") {
-            player.visible = false;
-            fullscreen.visible = false;
-          } else if (state === "ready") {
-            player.visible = true;
-            fullscreen.visible = true;
-          }
-        }
-      )
-    );
+    view.ui.add(this.store.timeStore.timeSlider, "manual");
   }
 
   render() {
