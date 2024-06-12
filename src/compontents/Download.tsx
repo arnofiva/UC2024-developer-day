@@ -17,9 +17,20 @@ type DownloadProperties = Pick<Download, "store">;
 
 const snippetToggle = createToggle("downloadCodeSnippet");
 
+const stickyNote = document.getElementById("stickyNote");
+let stickyNoteShown = false;
+
 window.onkeydown = (e: KeyboardEvent) => {
   if (e.key === "c") {
     snippetToggle();
+  } else if (e.key === " ") {
+    if (stickyNoteShown) {
+      stickyNote?.classList.add("hide");
+    } else {
+      stickyNote?.classList.remove("hide");
+    }
+    stickyNoteShown = !stickyNoteShown;
+    e.stopImmediatePropagation();
   }
 };
 

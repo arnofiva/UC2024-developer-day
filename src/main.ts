@@ -27,6 +27,8 @@ const view = new SceneView({
   map,
 });
 
+view.popupEnabled = false;
+
 (window as any)["view"] = view;
 
 const store = new AppStore({
