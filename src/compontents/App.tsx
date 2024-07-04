@@ -12,10 +12,13 @@ import Expand from "@arcgis/core/widgets/Expand";
 import Fullscreen from "@arcgis/core/widgets/Fullscreen";
 import AppStore from "../stores/AppStore";
 import Download from "./Download";
+import Flow from "./Flow";
 import Header from "./Header";
 import Time from "./Time";
 import Viewshed from "./Viewshed";
 import { Widget } from "./Widget";
+
+import "@esri/calcite-components/dist/components/calcite-shell";
 
 type AppProperties = Pick<App, "store">;
 
@@ -29,27 +32,29 @@ class App extends Widget<AppProperties> {
     const fullscreen = new Fullscreen({ view });
     view.ui.add(fullscreen, "top-left");
 
-    const time = new Time({
-      store: this.store.timeStore,
+    whenOnce(() => this.store.timeStore).then((store) => {
+      const time = new Time({
+        store: this.store.timeStore,
+      });
+
+      const timeExpand = new Expand({
+        view,
+        content: time,
+        group: "top-right",
+        expanded: true,
+        expandIcon: time.store.timeSlider.icon,
+      });
+
+      view.ui.add(timeExpand, "top-right");
+
+      watch(
+        () => timeExpand.expanded,
+        (expanded) => (this.store.timeStore.showTimeSlider = expanded),
+        { initial: true },
+      );
+
+      view.ui.add(this.store.timeStore.timeSlider, "manual");
     });
-
-    const timeExpand = new Expand({
-      view,
-      content: time,
-      group: "top-right",
-      expanded: true,
-      expandIcon: time.store.timeSlider.icon,
-    });
-
-    view.ui.add(timeExpand, "top-right");
-
-    watch(
-      () => timeExpand.expanded,
-      (expanded) => (this.store.timeStore.showTimeSlider = expanded),
-      { initial: true },
-    );
-
-    view.ui.add(this.store.timeStore.timeSlider, "manual");
 
     whenOnce(() => this.store.downloadStore).then((store) => {
       const download = new Download({
@@ -115,10 +120,20 @@ class App extends Widget<AppProperties> {
     });
   }
 
+  private bindView(element: HTMLDivElement) {
+    this.store.view.container = element;
+  }
+
   render() {
     return (
       <div>
-        <Header store={this.store}></Header>
+        <calcite-shell>
+          <Header store={this.store}></Header>
+
+          <div id="viewDiv" afterCreate={(e: any) => this.bindView(e)}></div>
+
+          <Flow store={this.store}></Flow>
+        </calcite-shell>
       </div>
     );
   }

@@ -9,9 +9,13 @@ console.log(`Using ArcGIS Maps SDK for JavaScript v${kernel.fullVersion}`);
 
 // setAssetPath("https://js.arcgis.com/calcite-components/1.0.0-beta.77/assets");
 
+/*
+47.36629893125558,8.525363607720573,417.9994201660156
+*/
+
 const params = new URLSearchParams(document.location.search.slice(1));
 
-const webSceneId = params.get("webscene") || "951ae9874b354cb7a69f07fc58e2b2d9";
+const webSceneId = params.get("webscene") || "c1e17338b7324a478f65d3507f05b3dd";
 
 const map = new WebScene({
   portalItem: {
@@ -23,7 +27,7 @@ const map = new WebScene({
 });
 
 const view = new SceneView({
-  container: "viewDiv",
+  // container: "viewDiv",
   map,
 });
 

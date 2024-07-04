@@ -6,6 +6,7 @@ import {
 } from "@arcgis/core/core/accessorSupport/decorators";
 import { whenOnce } from "@arcgis/core/core/reactiveUtils";
 import SceneLayer from "@arcgis/core/layers/SceneLayer";
+import { getTimeSliderSettingsFromWebDocument } from "@arcgis/core/support/timeUtils";
 import SceneView from "@arcgis/core/views/SceneView";
 import DownloadStore from "./DownloadStore";
 import TimeStore from "./TimeStore";
@@ -25,7 +26,7 @@ class AppStore extends Accessor {
   @property({ constructOnly: true })
   userStore = new UserStore();
 
-  @property({ constructOnly: true })
+  @property({})
   timeStore: TimeStore;
 
   @property({ constructOnly: true })
@@ -37,8 +38,6 @@ class AppStore extends Accessor {
   constructor(props: AppStoreProperties) {
     super(props);
 
-    this.timeStore = new TimeStore({ view: props.view });
-
     this.viewshedStore = new ViewshedStore({ view: props.view });
 
     whenOnce(() => this.map).then(async (map) => {
@@ -46,6 +45,10 @@ class AppStore extends Accessor {
       document.title = map.portalItem.title;
 
       await map.loadAll();
+
+      getTimeSliderSettingsFromWebDocument(map).then((timeSliderConfig) => {
+        this.timeStore = new TimeStore({ view: props.view, timeSliderConfig });
+      });
 
       const buildingsLayer = map.allLayers.find(
         (l) => l.type === "scene" && l.title === "Buildings in Zurich",

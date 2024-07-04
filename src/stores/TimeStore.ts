@@ -1,5 +1,4 @@
 import TimeExtent from "@arcgis/core/TimeExtent";
-import TimeInterval from "@arcgis/core/TimeInterval";
 import Accessor from "@arcgis/core/core/Accessor";
 import {
   property,
@@ -9,7 +8,7 @@ import { watch } from "@arcgis/core/core/reactiveUtils";
 import SceneView from "@arcgis/core/views/SceneView";
 import TimeSlider from "@arcgis/core/widgets/TimeSlider";
 
-type TimeStoreProperties = Pick<TimeStore, "view">;
+type TimeStoreProperties = Pick<TimeStore, "view" | "timeSliderConfig">;
 
 @subclass("arcgis-core-template.TimeStore")
 class TimeStore extends Accessor {
@@ -18,6 +17,9 @@ class TimeStore extends Accessor {
 
   @property({ constructOnly: true })
   timeSlider: TimeSlider;
+
+  @property({ constructOnly: true })
+  timeSliderConfig: any;
 
   @property()
   enabled = false;
@@ -36,21 +38,7 @@ class TimeStore extends Accessor {
     this.timeSlider = new TimeSlider({
       container: timeDiv,
       view,
-      mode: "instant",
-      fullTimeExtent: {
-        start: new Date("2019-01-21"),
-        end: new Date("2031-01-21"),
-      },
-      timeExtent: {
-        start: new Date("2028-01-21"),
-        end: new Date("2028-01-21"),
-      },
-      stops: {
-        interval: new TimeInterval({
-          value: 1,
-          unit: "years",
-        }),
-      },
+      ...props.timeSliderConfig,
     });
 
     const updateTimeSlider = () => {

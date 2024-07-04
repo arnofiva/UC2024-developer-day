@@ -7,6 +7,7 @@ import { Widget } from "./Widget";
 
 import { tsx } from "@arcgis/core/widgets/support/widget";
 
+import { whenOnce } from "@arcgis/core/core/reactiveUtils";
 import "@esri/calcite-components/dist/components/calcite-action";
 import "@esri/calcite-components/dist/components/calcite-button";
 import "@esri/calcite-components/dist/components/calcite-menu";
@@ -28,17 +29,19 @@ class Header extends Widget<HeaderProperties> {
   constructor(props: HeaderProperties) {
     super(props);
 
-    const viewContainer = props.store.view.container;
+    whenOnce(
+      () => this.store && this.store.view && this.store.view.container,
+    ).then((container) => {
+      container.addEventListener("mousedown", this.closeUserMenu);
 
-    viewContainer.addEventListener("mousedown", this.closeUserMenu);
-
-    this.addHandles([
-      {
-        remove: () => {
-          viewContainer.removeEventListener("mousedown", this.closeUserMenu);
+      this.addHandles([
+        {
+          remove: () => {
+            container.removeEventListener("mousedown", this.closeUserMenu);
+          },
         },
-      },
-    ]);
+      ]);
+    });
   }
 
   private closeUserMenu = () => {
@@ -62,31 +65,37 @@ class Header extends Widget<HeaderProperties> {
 
     return (
       <div>
-        <calcite-navigation slot="header">
-          <calcite-navigation-logo
-            slot="logo"
-            heading={this.store.map.portalItem.title}
-            description="ArcGIS Maps SDK for JavaScript"
-            thumbnail="./icon-64.svg"
-            onclick={() => {
-              this.openScene();
-            }}
-          ></calcite-navigation-logo>
-
-          {this.renderUserProfile()}
-        </calcite-navigation>
-        <calcite-menu
-          id="user-menu"
-          layout="vertical"
-          label="Application menu"
-          class={userMenuClass}
+        <calcite-shell-panel
+          id="bottomPanel"
+          slot="panel-header"
+          position="start"
         >
-          <calcite-menu-item
-            icon-start="sign-out"
-            text="Sign Out"
-            onclick={() => this.signOut()}
-          ></calcite-menu-item>
-        </calcite-menu>
+          <calcite-navigation>
+            <calcite-navigation-logo
+              slot="logo"
+              heading={this.store.map.portalItem.title}
+              description="ArcGIS Maps SDK for JavaScript"
+              thumbnail="./icon-64.svg"
+              onclick={() => {
+                this.openScene();
+              }}
+            ></calcite-navigation-logo>
+
+            {this.renderUserProfile()}
+          </calcite-navigation>
+          <calcite-menu
+            id="user-menu"
+            layout="vertical"
+            label="Application menu"
+            class={userMenuClass}
+          >
+            <calcite-menu-item
+              icon-start="sign-out"
+              text="Sign Out"
+              onclick={() => this.signOut()}
+            ></calcite-menu-item>
+          </calcite-menu>
+        </calcite-shell-panel>
       </div>
     );
   }
