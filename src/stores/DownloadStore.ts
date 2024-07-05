@@ -5,7 +5,7 @@ import {
   subclass,
 } from "@arcgis/core/core/accessorSupport/decorators";
 import { debounce } from "@arcgis/core/core/promiseUtils";
-import * as reactiveUtils from "@arcgis/core/core/reactiveUtils";
+import { watch, when } from "@arcgis/core/core/reactiveUtils";
 import { Extent, Geometry, Point, Polygon } from "@arcgis/core/geometry";
 import GraphicsLayer from "@arcgis/core/layers/GraphicsLayer";
 import FeatureFilter from "@arcgis/core/layers/support/FeatureFilter";
@@ -13,8 +13,12 @@ import { FillSymbol3DLayer, PolygonSymbol3D } from "@arcgis/core/symbols";
 import StylePattern3D from "@arcgis/core/symbols/patterns/StylePattern3D";
 import SceneView from "@arcgis/core/views/SceneView";
 import SceneLayerView from "@arcgis/core/views/layers/SceneLayerView";
+import Editor from "@arcgis/core/widgets/Editor";
+import Expand from "@arcgis/core/widgets/Expand";
 import Sketch from "@arcgis/core/widgets/Sketch";
 import SketchViewModel from "@arcgis/core/widgets/Sketch/SketchViewModel";
+import Download from "../compontents/Download";
+import { ScreenType } from "../interfaces";
 
 type DownloadStoreProperties = Pick<
   DownloadStore,
@@ -23,6 +27,8 @@ type DownloadStoreProperties = Pick<
 
 @subclass("arcgis-core-template.DownloadStore")
 class DownloadStore extends Accessor {
+  readonly type = ScreenType.Download;
+
   @property({ constructOnly: true })
   view: SceneView;
 
@@ -75,7 +81,7 @@ class DownloadStore extends Accessor {
     const highlightGeometry = (getGeometry: () => Geometry) => {
       let highlights: IHandle | null = null;
 
-      const highlightHandle = reactiveUtils.watch(
+      const highlightHandle = watch(
         getGeometry,
         (geometry) => {
           if (geometry) {
@@ -97,6 +103,64 @@ class DownloadStore extends Accessor {
     };
 
     this.tool = new ExtentTool({ vm: sketch.viewModel, highlightGeometry });
+
+    const download = new Download({
+      store: this,
+    });
+
+    const downloadExpand = new Expand({
+      view,
+      content: download,
+      group: "top-right",
+      expandIcon: "download",
+    });
+    view.ui.add(downloadExpand, "top-right");
+
+    watch(
+      () => downloadExpand.expanded,
+      (expanded) => {
+        if (expanded) {
+          this.highlightArea();
+        } else {
+          this.removeHighlight();
+        }
+      },
+    );
+
+    const editorExpand = new Expand({
+      view,
+      content: new Editor({
+        view,
+      }),
+      group: "top-right",
+    });
+
+    view.ui.add(editorExpand, "top-right");
+
+    watch(
+      () => editorExpand.expanded,
+      (expanded) => {
+        const geometry = this.area;
+
+        if (expanded && geometry) {
+          this.buildingsLayerView.filter = new FeatureFilter({
+            geometry,
+            spatialRelationship: "disjoint",
+          });
+        } else {
+          // store.buildingsLayerView.filter = null as any;
+        }
+      },
+    );
+
+    this.addHandles({
+      remove: () => {
+        view.ui.remove(downloadExpand);
+        view.ui.remove(editorExpand);
+        view.map.add(sketchLayer);
+        sketch.destroy();
+      },
+    });
   }
 
   start() {
@@ -246,7 +310,7 @@ class ExtentShape extends Accessor {
 
     this.addHandles([
       highlightHandle,
-      reactiveUtils.watch(
+      watch(
         () => this.polygon.rings[0].length - 1,
         (vertexes) => {
           // deleting a vertex creates an invalid extent,
@@ -256,7 +320,7 @@ class ExtentShape extends Accessor {
           }
         },
       ),
-      reactiveUtils.watch(
+      watch(
         () => this.aa,
         (vertex) => {
           if (vertex) {
@@ -265,7 +329,7 @@ class ExtentShape extends Accessor {
           }
         },
       ),
-      reactiveUtils.watch(
+      watch(
         () => this.ab,
         (vertex) => {
           if (vertex) {
@@ -274,7 +338,7 @@ class ExtentShape extends Accessor {
           }
         },
       ),
-      reactiveUtils.watch(
+      watch(
         () => this.bb,
         (vertex) => {
           if (vertex) {
@@ -283,7 +347,7 @@ class ExtentShape extends Accessor {
           }
         },
       ),
-      reactiveUtils.watch(
+      watch(
         () => this.ba,
         (vertex) => {
           if (vertex) {
@@ -354,7 +418,7 @@ class ExtentTool extends Accessor {
 
     this.addHandles([
       highlightHandle,
-      reactiveUtils.watch(
+      watch(
         () => this.state,
         (state) => {
           if (state === "idle") {
@@ -366,7 +430,7 @@ class ExtentTool extends Accessor {
           }
         },
       ),
-      reactiveUtils.watch(
+      watch(
         () => this.polygon,
         (polygon) => {
           if (polygon) {
@@ -377,11 +441,11 @@ class ExtentTool extends Accessor {
           }
         },
       ),
-      reactiveUtils.when(
+      when(
         () => this.controlPointA,
         (a) => {
           a.addHandles([
-            reactiveUtils.watch(
+            watch(
               () => this.controlPointA,
               (next, old) => {
                 if (next == null && old) {
@@ -392,11 +456,11 @@ class ExtentTool extends Accessor {
           ]);
         },
       ),
-      reactiveUtils.when(
+      when(
         () => this.controlPointB,
         (b) => {
           b.addHandles([
-            reactiveUtils.watch(
+            watch(
               () => this.controlPointB,
               (next, old) => {
                 if (next == null && old) {

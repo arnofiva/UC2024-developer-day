@@ -5,138 +5,105 @@ import {
 
 import { tsx } from "@arcgis/core/widgets/support/widget";
 
-import { watch, whenOnce } from "@arcgis/core/core/reactiveUtils";
-import FeatureFilter from "@arcgis/core/layers/support/FeatureFilter";
-import Editor from "@arcgis/core/widgets/Editor";
-import Expand from "@arcgis/core/widgets/Expand";
 import Fullscreen from "@arcgis/core/widgets/Fullscreen";
 import AppStore from "../stores/AppStore";
-import Download from "./Download";
 import Flow from "./Flow";
 import Header from "./Header";
-import Time from "./Time";
-import Viewshed from "./Viewshed";
 import { Widget } from "./Widget";
 
+import { debounce } from "@arcgis/core/core/promiseUtils";
+import { whenOnce } from "@arcgis/core/core/reactiveUtils";
+import SceneLayer from "@arcgis/core/layers/SceneLayer";
+import { getTimeSliderSettingsFromWebDocument } from "@arcgis/core/support/timeUtils";
+import SceneView from "@arcgis/core/views/SceneView";
+import Expand from "@arcgis/core/widgets/Expand";
+import LayerList from "@arcgis/core/widgets/LayerList";
 import "@esri/calcite-components/dist/components/calcite-shell";
+import { ScreenType, UIActions } from "../interfaces";
+import DownloadStore from "../stores/DownloadStore";
+import TimeStore from "../stores/TimeStore";
 
 type AppProperties = Pick<App, "store">;
 
 @subclass("arcgis-core-template.App")
-class App extends Widget<AppProperties> {
+class App extends Widget<AppProperties> implements UIActions {
   @property()
   store: AppStore;
 
+  @property()
+  view: SceneView;
+
   postInitialize(): void {
-    const view = this.store.view;
-    const fullscreen = new Fullscreen({ view });
-    view.ui.add(fullscreen, "top-left");
+    whenOnce(() => this.view).then((view) => {
+      const fullscreen = new Fullscreen({ view });
+      view.ui.add(fullscreen, "top-left");
 
-    whenOnce(() => this.store.timeStore).then((store) => {
-      const time = new Time({
-        store: this.store.timeStore,
-      });
-
-      const timeExpand = new Expand({
-        view,
-        content: time,
-        group: "top-right",
-        expanded: true,
-        expandIcon: time.store.timeSlider.icon,
-      });
-
-      view.ui.add(timeExpand, "top-right");
-
-      watch(
-        () => timeExpand.expanded,
-        (expanded) => (this.store.timeStore.showTimeSlider = expanded),
-        { initial: true },
-      );
-
-      view.ui.add(this.store.timeStore.timeSlider, "manual");
-    });
-
-    whenOnce(() => this.store.downloadStore).then((store) => {
-      const download = new Download({
-        store,
-      });
-
-      const downloadExpand = new Expand({
-        view,
-        content: download,
-        group: "top-right",
-        expandIcon: "download",
-      });
-      view.ui.add(downloadExpand, "top-right");
-
-      watch(
-        () => downloadExpand.expanded,
-        (expanded) => {
-          if (expanded) {
-            store.highlightArea();
-          } else {
-            store.removeHighlight();
-          }
-        },
-      );
-
-      const editorExpand = new Expand({
-        view,
-        content: new Editor({
+      view.ui.add(
+        new Expand({
           view,
+          content: new LayerList({ view }),
         }),
-        group: "top-right",
-      });
-
-      view.ui.add(editorExpand, "top-right");
-
-      watch(
-        () => editorExpand.expanded,
-        (expanded) => {
-          const geometry = store.area;
-
-          if (expanded && geometry) {
-            store.buildingsLayerView.filter = new FeatureFilter({
-              geometry,
-              spatialRelationship: "disjoint",
-            });
-          } else {
-            // store.buildingsLayerView.filter = null as any;
-          }
-        },
+        "bottom-right",
       );
-
-      const viewshedExpand = new Expand({
-        view,
-        content: new Viewshed({
-          store: this.store.viewshedStore,
-        }),
-        expandIcon: "viewshed",
-        // expandIcon: "measure-building-height-shadow",
-        group: "top-right",
-      });
-
-      view.ui.add(viewshedExpand, "top-right");
     });
   }
 
-  private bindView(element: HTMLDivElement) {
-    this.store.view.container = element;
+  private bindView(container: HTMLDivElement) {
+    requestAnimationFrame(() => {
+      this.view = new SceneView({
+        container,
+        map: this.store.map,
+      });
+
+      this.view.popupEnabled = false;
+      (window as any)["view"] = this.view;
+    });
   }
 
   render() {
     return (
       <div>
         <calcite-shell>
-          <Header store={this.store}></Header>
+          <Header view={this.view} store={this.store}></Header>
 
           <div id="viewDiv" afterCreate={(e: any) => this.bindView(e)}></div>
 
-          <Flow store={this.store}></Flow>
+          <Flow uiActions={this} store={this.store}></Flow>
         </calcite-shell>
       </div>
     );
   }
+
+  private async createScreen(screen: ScreenType) {
+    const view = this.view;
+    const map = this.store.map;
+
+    switch (screen) {
+      case ScreenType.Time:
+        const timeSliderConfig =
+          await getTimeSliderSettingsFromWebDocument(map);
+
+        return new TimeStore({ view, timeSliderConfig });
+      case ScreenType.Download:
+        const buildingsLayer = map.findLayerById(
+          "190697a6c61-layer-314",
+        ) as SceneLayer;
+
+        const buildingsLayerView = await view.whenLayerView(buildingsLayer);
+        return new DownloadStore({ view, buildingsLayerView });
+      default:
+        throw new Error();
+    }
+  }
+
+  selectScreen = debounce(async (screenType: ScreenType) => {
+    if (this.store.currentScreenStore?.type === screenType) {
+      return;
+    }
+
+    const screen = await this.createScreen(screenType);
+    this.store.currentScreenStore = screen;
+  });
 }
 
 export default App;

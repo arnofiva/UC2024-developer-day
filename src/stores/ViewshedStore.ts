@@ -8,11 +8,16 @@ import * as promiseUtils from "@arcgis/core/core/promiseUtils";
 import * as reactiveUtils from "@arcgis/core/core/reactiveUtils";
 import ViewshedAnalysisView3D from "@arcgis/core/views/3d/analysis/ViewshedAnalysisView3D";
 import SceneView from "@arcgis/core/views/SceneView";
+import Expand from "@arcgis/core/widgets/Expand";
+import Viewshed from "../compontents/Viewshed";
+import { ScreenType } from "../interfaces";
 
 type ViewshedStoreProperties = Pick<ViewshedStore, "view">;
 
 @subclass("arcgis-core-template.ViewshedStore")
 class ViewshedStore extends Accessor {
+  readonly type = ScreenType.Viewshed;
+
   @property({ constructOnly: true })
   view: SceneView;
 
@@ -39,6 +44,24 @@ class ViewshedStore extends Accessor {
 
     view.whenAnalysisView(this.viewshedAnalysis).then((analysisView) => {
       this.analysisView = analysisView;
+    });
+
+    const viewshedExpand = new Expand({
+      view,
+      content: new Viewshed({
+        store: this,
+      }),
+      expandIcon: "viewshed",
+      // expandIcon: "measure-building-height-shadow",
+      group: "top-right",
+    });
+
+    view.ui.add(viewshedExpand, "top-right");
+
+    this.addHandles({
+      remove: () => {
+        view.ui.remove(viewshedExpand);
+      },
     });
   }
 

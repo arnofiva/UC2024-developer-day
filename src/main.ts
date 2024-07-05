@@ -1,6 +1,5 @@
 import WebScene from "@arcgis/core/WebScene";
 import * as kernel from "@arcgis/core/kernel";
-import SceneView from "@arcgis/core/views/SceneView";
 import "@esri/calcite-components/dist/calcite/calcite.css";
 import App from "./compontents/App";
 import AppStore from "./stores/AppStore";
@@ -26,20 +25,13 @@ const map = new WebScene({
   },
 });
 
-const view = new SceneView({
-  // container: "viewDiv",
-  map,
-});
+map.loadAll().then(() => {
+  const store = new AppStore({
+    map,
+  });
 
-view.popupEnabled = false;
-
-(window as any)["view"] = view;
-
-const store = new AppStore({
-  view,
-});
-
-const app = new App({
-  container: "app",
-  store,
+  const app = new App({
+    container: "app",
+    store,
+  });
 });

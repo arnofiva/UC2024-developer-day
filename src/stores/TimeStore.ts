@@ -6,12 +6,17 @@ import {
 } from "@arcgis/core/core/accessorSupport/decorators";
 import { watch } from "@arcgis/core/core/reactiveUtils";
 import SceneView from "@arcgis/core/views/SceneView";
+import Expand from "@arcgis/core/widgets/Expand";
 import TimeSlider from "@arcgis/core/widgets/TimeSlider";
+import Time from "../compontents/Time";
+import { ScreenType } from "../interfaces";
 
 type TimeStoreProperties = Pick<TimeStore, "view" | "timeSliderConfig">;
 
 @subclass("arcgis-core-template.TimeStore")
 class TimeStore extends Accessor {
+  readonly type = ScreenType.Time;
+
   @property({ constructOnly: true })
   view: SceneView;
 
@@ -35,10 +40,12 @@ class TimeStore extends Accessor {
     const timeDiv = document.createElement("div");
     timeDiv.classList.add("time-slider");
 
+    const timeSliderConfig = props.timeSliderConfig;
+
     this.timeSlider = new TimeSlider({
       container: timeDiv,
       view,
-      ...props.timeSliderConfig,
+      ...timeSliderConfig,
     });
 
     const updateTimeSlider = () => {
@@ -64,6 +71,35 @@ class TimeStore extends Accessor {
     );
 
     watch(() => this.showTimeSlider, updateTimeSlider);
+
+    const time = new Time({
+      store: this,
+    });
+
+    const timeExpand = new Expand({
+      view,
+      content: time,
+      group: "top-right",
+      expanded: true,
+      expandIcon: time.store.timeSlider.icon,
+    });
+
+    view.ui.add(timeExpand, "top-right");
+
+    watch(
+      () => timeExpand.expanded,
+      (expanded) => (this.showTimeSlider = expanded),
+      { initial: true },
+    );
+
+    view.ui.add(this.timeSlider, "manual");
+
+    this.addHandles({
+      remove: () => {
+        view.ui.remove(timeExpand);
+        view.ui.remove(this.timeSlider);
+      },
+    });
   }
 }
 

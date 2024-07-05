@@ -8,6 +8,7 @@ import { Widget } from "./Widget";
 import { tsx } from "@arcgis/core/widgets/support/widget";
 
 import { whenOnce } from "@arcgis/core/core/reactiveUtils";
+import SceneView from "@arcgis/core/views/SceneView";
 import "@esri/calcite-components/dist/components/calcite-action";
 import "@esri/calcite-components/dist/components/calcite-button";
 import "@esri/calcite-components/dist/components/calcite-menu";
@@ -16,10 +17,13 @@ import "@esri/calcite-components/dist/components/calcite-navigation";
 import "@esri/calcite-components/dist/components/calcite-navigation-logo";
 import "@esri/calcite-components/dist/components/calcite-navigation-user";
 
-type HeaderProperties = Pick<Header, "store">;
+type HeaderProperties = Pick<Header, "store" | "view">;
 
 @subclass("arcgis-core-template.Header")
 class Header extends Widget<HeaderProperties> {
+  @property()
+  view: SceneView;
+
   @property()
   store: AppStore;
 
@@ -29,9 +33,7 @@ class Header extends Widget<HeaderProperties> {
   constructor(props: HeaderProperties) {
     super(props);
 
-    whenOnce(
-      () => this.store && this.store.view && this.store.view.container,
-    ).then((container) => {
+    whenOnce(() => this.view?.container).then((container) => {
       container.addEventListener("mousedown", this.closeUserMenu);
 
       this.addHandles([
