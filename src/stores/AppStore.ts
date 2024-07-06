@@ -5,6 +5,8 @@ import {
   subclass,
 } from "@arcgis/core/core/accessorSupport/decorators";
 import { whenOnce } from "@arcgis/core/core/reactiveUtils";
+import SceneView from "@arcgis/core/views/SceneView";
+import { applySlide } from "../utils";
 import DownloadStore from "./DownloadStore";
 import RealisticStore from "./RealisticStore";
 import TimeStore from "./TimeStore";
@@ -12,7 +14,7 @@ import UploadStore from "./UploadStore";
 import UserStore from "./UserStore";
 import ViewshedStore from "./ViewshedStore";
 
-type AppStoreProperties = Pick<AppStore, "map">;
+type AppStoreProperties = Pick<AppStore, "view">;
 
 export type ScreenStoreUnion =
   | TimeStore
@@ -24,6 +26,9 @@ export type ScreenStoreUnion =
 @subclass("arcgis-core-template.AppStore")
 class AppStore extends Accessor {
   @property({ constructOnly: true })
+  view: SceneView;
+
+  @property({ aliasOf: "view.map" })
   map: WebScene;
 
   @property({ constructOnly: true })
@@ -41,13 +46,29 @@ class AppStore extends Accessor {
     this._currentScreen = screen;
   }
 
+  @property({})
   private _currentScreen: ScreenStoreUnion | null;
 
   constructor(props: AppStoreProperties) {
     super(props);
 
+    const view = props.view;
+
     whenOnce(() => this.map).then((map) => {
       document.title = map.portalItem.title;
+    });
+
+    window.onkeydown = (e) => {
+      const index = Number.parseInt(e.key);
+      if (Number.isInteger(index)) {
+        applySlide(view, index - 1);
+      }
+    };
+
+    this.addHandles({
+      remove: () => {
+        window.onkeydown = null;
+      },
     });
   }
 }

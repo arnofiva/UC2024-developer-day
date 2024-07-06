@@ -1,8 +1,10 @@
 import WebScene from "@arcgis/core/WebScene";
 import * as kernel from "@arcgis/core/kernel";
+import SceneView from "@arcgis/core/views/SceneView";
 import "@esri/calcite-components/dist/calcite/calcite.css";
 import App from "./compontents/App";
 import AppStore from "./stores/AppStore";
+import { setViewUI } from "./utils";
 
 console.log(`Using ArcGIS Maps SDK for JavaScript v${kernel.fullVersion}`);
 
@@ -25,9 +27,18 @@ const map = new WebScene({
   },
 });
 
+const view = new SceneView({
+  container: "viewDiv",
+  map,
+});
+
+view.popupEnabled = false;
+setViewUI(view.ui);
+(window as any)["view"] = view;
+
 map.loadAll().then(() => {
   const store = new AppStore({
-    map,
+    view,
   });
 
   const app = new App({

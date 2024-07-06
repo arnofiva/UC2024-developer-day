@@ -9,7 +9,9 @@ import "@esri/calcite-components/dist/components/calcite-card";
 import "@esri/calcite-components/dist/components/calcite-label";
 import "@esri/calcite-components/dist/components/calcite-switch";
 
+import TimeSlider from "@arcgis/core/widgets/TimeSlider";
 import TimeStore from "../stores/TimeStore";
+import { ensureViewUIContainer } from "../utils";
 import { Widget } from "./Widget";
 
 type TimeProperties = Pick<Time, "store">;
@@ -25,6 +27,8 @@ class Time extends Widget<TimeProperties> {
 
   render() {
     const timeExtent = this.store.view.timeExtent;
+    const { fullTimeExtent, loop, mode, playRate, stops } =
+      this.store.timeSliderConfig;
 
     const infoTextElement = document.getElementById("time-period");
     let activePeriod = "No Time Filtering";
@@ -39,21 +43,16 @@ class Time extends Widget<TimeProperties> {
 
     return (
       <div>
-        <calcite-card id="temporal-filter">
-          <span id="time-period" slot="description">
-            {activePeriod}
-          </span>
-          <calcite-label slot="heading" layout="inline">
-            <calcite-switch
-              id="temporal-filter-switch"
-              checked={this.store.enabled}
-              onCalciteSwitchChange={() =>
-                (this.store.enabled = !this.store.enabled)
-              }
-            ></calcite-switch>{" "}
-            Temporal filter
-          </calcite-label>
-        </calcite-card>
+        <TimeSlider
+          container={ensureViewUIContainer("manual", "time-slider")}
+          view={this.store.view}
+          fullTimeExtent={fullTimeExtent}
+          timeExtent={timeExtent}
+          loop={loop}
+          mode={mode}
+          playRate={playRate}
+          stops={stops}
+        ></TimeSlider>
       </div>
     );
   }

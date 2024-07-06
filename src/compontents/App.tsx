@@ -15,13 +15,17 @@ import { debounce } from "@arcgis/core/core/promiseUtils";
 import { whenOnce } from "@arcgis/core/core/reactiveUtils";
 import SceneLayer from "@arcgis/core/layers/SceneLayer";
 import { getTimeSliderSettingsFromWebDocument } from "@arcgis/core/support/timeUtils";
-import SceneView from "@arcgis/core/views/SceneView";
 import Expand from "@arcgis/core/widgets/Expand";
 import LayerList from "@arcgis/core/widgets/LayerList";
 import "@esri/calcite-components/dist/components/calcite-shell";
 import { ScreenType, UIActions } from "../interfaces";
 import DownloadStore from "../stores/DownloadStore";
 import TimeStore from "../stores/TimeStore";
+import UploadStore from "../stores/UploadStore";
+import Download from "./Download";
+import Time from "./Time";
+import Upload from "./Upload";
+import Viewshed from "./Viewshed";
 
 type AppProperties = Pick<App, "store">;
 
@@ -30,11 +34,8 @@ class App extends Widget<AppProperties> implements UIActions {
   @property()
   store: AppStore;
 
-  @property()
-  view: SceneView;
-
   postInitialize(): void {
-    whenOnce(() => this.view).then((view) => {
+    whenOnce(() => this.store.view).then((view) => {
       const fullscreen = new Fullscreen({ view });
       view.ui.add(fullscreen, "top-left");
 
@@ -48,25 +49,33 @@ class App extends Widget<AppProperties> implements UIActions {
     });
   }
 
-  private bindView(container: HTMLDivElement) {
-    requestAnimationFrame(() => {
-      this.view = new SceneView({
-        container,
-        map: this.store.map,
-      });
+  private bindView(element: HTMLDivElement) {
+    element.appendChild(this.store.view.container);
+  }
 
-      this.view.popupEnabled = false;
-      (window as any)["view"] = this.view;
-    });
+  private renderScreen() {
+    const screenStore = this.store.currentScreenStore;
+    switch (screenStore?.type) {
+      case ScreenType.Time:
+        return <Time store={screenStore}></Time>;
+      case ScreenType.Download:
+        return <Download store={screenStore}></Download>;
+      case ScreenType.Upload:
+        return <Upload store={screenStore}></Upload>;
+      case ScreenType.Viewshed:
+        return <Viewshed store={screenStore}></Viewshed>;
+    }
   }
 
   render() {
     return (
       <div>
         <calcite-shell>
-          <Header view={this.view} store={this.store}></Header>
+          <Header view={this.store.view} store={this.store}></Header>
 
-          <div id="viewDiv" afterCreate={(e: any) => this.bindView(e)}></div>
+          <div id="content" afterCreate={(e: any) => this.bindView(e)}>
+            <div id="screen">{this.renderScreen()}</div>
+          </div>
 
           <Flow uiActions={this} store={this.store}></Flow>
         </calcite-shell>
@@ -75,7 +84,7 @@ class App extends Widget<AppProperties> implements UIActions {
   }
 
   private async createScreen(screen: ScreenType) {
-    const view = this.view;
+    const view = this.store.view;
     const map = this.store.map;
 
     switch (screen) {
@@ -91,6 +100,8 @@ class App extends Widget<AppProperties> implements UIActions {
 
         const buildingsLayerView = await view.whenLayerView(buildingsLayer);
         return new DownloadStore({ view, buildingsLayerView });
+      case ScreenType.Upload:
+        return new UploadStore({ view });
       default:
         throw new Error();
     }

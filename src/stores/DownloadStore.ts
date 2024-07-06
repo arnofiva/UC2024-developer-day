@@ -19,6 +19,7 @@ import Sketch from "@arcgis/core/widgets/Sketch";
 import SketchViewModel from "@arcgis/core/widgets/Sketch/SketchViewModel";
 import Download from "../compontents/Download";
 import { ScreenType } from "../interfaces";
+import { applySlide } from "../utils";
 
 type DownloadStoreProperties = Pick<
   DownloadStore,
@@ -45,6 +46,8 @@ class DownloadStore extends Accessor {
     super(props);
 
     const view = props.view;
+
+    applySlide(view, 2);
 
     const sketchLayer = new GraphicsLayer({
       elevationInfo: {
