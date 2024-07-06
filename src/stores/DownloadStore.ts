@@ -11,19 +11,18 @@ import GraphicsLayer from "@arcgis/core/layers/GraphicsLayer";
 import FeatureFilter from "@arcgis/core/layers/support/FeatureFilter";
 import { FillSymbol3DLayer, PolygonSymbol3D } from "@arcgis/core/symbols";
 import StylePattern3D from "@arcgis/core/symbols/patterns/StylePattern3D";
-import SceneView from "@arcgis/core/views/SceneView";
 import SceneLayerView from "@arcgis/core/views/layers/SceneLayerView";
-import Editor from "@arcgis/core/widgets/Editor";
 import Expand from "@arcgis/core/widgets/Expand";
 import Sketch from "@arcgis/core/widgets/Sketch";
 import SketchViewModel from "@arcgis/core/widgets/Sketch/SketchViewModel";
 import Download from "../compontents/Download";
 import { ScreenType } from "../interfaces";
-import { applySlide } from "../utils";
+import { applySlide, ignoreAbortErrors } from "../utils";
+import AppStore from "./AppStore";
 
 type DownloadStoreProperties = Pick<
   DownloadStore,
-  "view" | "buildingsLayerView"
+  "appStore" | "buildingsLayerView"
 >;
 
 @subclass("arcgis-core-template.DownloadStore")
@@ -31,7 +30,7 @@ class DownloadStore extends Accessor {
   readonly type = ScreenType.Download;
 
   @property({ constructOnly: true })
-  view: SceneView;
+  appStore: AppStore;
 
   @property({ constructOnly: true })
   buildingsLayerView: SceneLayerView;
@@ -39,17 +38,18 @@ class DownloadStore extends Accessor {
   @property()
   tool: ExtentTool;
 
-  @property()
-  area: Geometry | null;
+  @property({ aliasOf: "appStore.selectedArea" })
+  area: Geometry;
 
   constructor(props: DownloadStoreProperties) {
     super(props);
 
-    const view = props.view;
+    const view = props.appStore.view;
 
     applySlide(view, 2);
 
     const sketchLayer = new GraphicsLayer({
+      title: "Download selection",
       elevationInfo: {
         mode: "on-the-ground",
       },
@@ -130,37 +130,11 @@ class DownloadStore extends Accessor {
       },
     );
 
-    const editorExpand = new Expand({
-      view,
-      content: new Editor({
-        view,
-      }),
-      group: "top-right",
-    });
-
-    view.ui.add(editorExpand, "top-right");
-
-    watch(
-      () => editorExpand.expanded,
-      (expanded) => {
-        const geometry = this.area;
-
-        if (expanded && geometry) {
-          this.buildingsLayerView.filter = new FeatureFilter({
-            geometry,
-            spatialRelationship: "disjoint",
-          });
-        } else {
-          // store.buildingsLayerView.filter = null as any;
-        }
-      },
-    );
-
     this.addHandles({
       remove: () => {
+        this.removeHighlight();
         view.ui.remove(downloadExpand);
-        view.ui.remove(editorExpand);
-        view.map.add(sketchLayer);
+        view.map.remove(sketchLayer);
         sketch.destroy();
       },
     });
@@ -172,7 +146,10 @@ class DownloadStore extends Accessor {
 
   private currentHighlight: IHandle = { remove: () => {} };
 
-  highlightArea = debounce(async () => {
+  private highlightArea = async () =>
+    ignoreAbortErrors(this.highlightAreaDebounced());
+
+  private highlightAreaDebounced = debounce(async () => {
     const geometry = this.area;
     if (geometry == null) {
       this.removeHighlight();

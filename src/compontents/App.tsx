@@ -20,6 +20,7 @@ import LayerList from "@arcgis/core/widgets/LayerList";
 import "@esri/calcite-components/dist/components/calcite-shell";
 import { ScreenType, UIActions } from "../interfaces";
 import DownloadStore from "../stores/DownloadStore";
+import RealisticStore from "../stores/RealisticStore";
 import TimeStore from "../stores/TimeStore";
 import UploadStore from "../stores/UploadStore";
 import Download from "./Download";
@@ -99,9 +100,11 @@ class App extends Widget<AppProperties> implements UIActions {
         ) as SceneLayer;
 
         const buildingsLayerView = await view.whenLayerView(buildingsLayer);
-        return new DownloadStore({ view, buildingsLayerView });
+        return new DownloadStore({ appStore: this.store, buildingsLayerView });
       case ScreenType.Upload:
-        return new UploadStore({ view });
+        return new UploadStore({ appStore: this.store });
+      case ScreenType.Realistic:
+        return new RealisticStore({ view: view });
       default:
         throw new Error();
     }

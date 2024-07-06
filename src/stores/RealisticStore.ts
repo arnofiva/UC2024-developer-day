@@ -5,6 +5,7 @@ import {
 } from "@arcgis/core/core/accessorSupport/decorators";
 import SceneView from "@arcgis/core/views/SceneView";
 import { ScreenType } from "../interfaces";
+import { applySlide } from "../utils";
 
 type RealisticStoreProperties = Pick<RealisticStore, "view">;
 
@@ -16,6 +17,8 @@ class RealisticStore extends Accessor {
 
   constructor(props: RealisticStoreProperties) {
     super(props);
+
+    applySlide(props.view, 3);
   }
 }
 
