@@ -82,6 +82,11 @@ calcite-tile {
   z-index: 1;
 }
 
+/* Download */
+.download {
+  min-width: 250px;
+}
+
 /* Sticky note */
 
 #stickyNote {
@@ -125,7 +130,7 @@ calcite-tile {
 }
 
 pre[class*="language-"] {
-  margin-bottom: 16px;
+  margin-bottom: 119px;
 }
 
 .token.operator,

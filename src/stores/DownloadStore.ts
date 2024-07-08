@@ -5,17 +5,21 @@ import {
   subclass,
 } from "@arcgis/core/core/accessorSupport/decorators";
 import { debounce } from "@arcgis/core/core/promiseUtils";
-import { watch, when } from "@arcgis/core/core/reactiveUtils";
-import { Extent, Geometry, Point, Polygon } from "@arcgis/core/geometry";
+import { watch, when, whenOnce } from "@arcgis/core/core/reactiveUtils";
+import {
+  Extent,
+  Geometry,
+  Point,
+  Polygon,
+  SpatialReference,
+} from "@arcgis/core/geometry";
 import GraphicsLayer from "@arcgis/core/layers/GraphicsLayer";
 import FeatureFilter from "@arcgis/core/layers/support/FeatureFilter";
 import { FillSymbol3DLayer, PolygonSymbol3D } from "@arcgis/core/symbols";
 import StylePattern3D from "@arcgis/core/symbols/patterns/StylePattern3D";
 import SceneLayerView from "@arcgis/core/views/layers/SceneLayerView";
-import Expand from "@arcgis/core/widgets/Expand";
 import Sketch from "@arcgis/core/widgets/Sketch";
 import SketchViewModel from "@arcgis/core/widgets/Sketch/SketchViewModel";
-import Download from "../compontents/Download";
 import { ScreenType } from "../interfaces";
 import { applySlide, ignoreAbortErrors } from "../utils";
 import AppStore from "./AppStore";
@@ -24,6 +28,13 @@ type DownloadStoreProperties = Pick<
   DownloadStore,
   "appStore" | "buildingsLayerView"
 >;
+
+const THE_POINT = new Point({
+  spatialReference: SpatialReference.WebMercator,
+  longitude: 8.525363607720573,
+  latitude: 47.36629893125558,
+  z: 417.43148594,
+});
 
 @subclass("arcgis-core-template.DownloadStore")
 class DownloadStore extends Accessor {
@@ -107,33 +118,13 @@ class DownloadStore extends Accessor {
 
     this.tool = new ExtentTool({ vm: sketch.viewModel, highlightGeometry });
 
-    const download = new Download({
-      store: this,
+    whenOnce(() => this.tool.state === "placing-a").then(() => {
+      this.appStore.lowPolyTrees.visible = false;
     });
-
-    const downloadExpand = new Expand({
-      view,
-      content: download,
-      group: "top-right",
-      expandIcon: "download",
-    });
-    view.ui.add(downloadExpand, "top-right");
-
-    watch(
-      () => downloadExpand.expanded,
-      (expanded) => {
-        if (expanded) {
-          this.highlightArea();
-        } else {
-          this.removeHighlight();
-        }
-      },
-    );
 
     this.addHandles({
       remove: () => {
         this.removeHighlight();
-        view.ui.remove(downloadExpand);
         view.map.remove(sketchLayer);
         sketch.destroy();
       },
@@ -491,6 +482,11 @@ class ExtentTool extends Accessor {
         const graphic = event.graphic;
 
         if (this.state === "placing-a") {
+          debugger;
+          (graphic.geometry as Point).x = THE_POINT.x;
+          (graphic.geometry as Point).y = THE_POINT.y;
+          (graphic.geometry as Point).z = THE_POINT.z;
+          // graphic.geometry = THE_POINT;
           this.controlPointA = graphic;
           this.vm.create("point");
           this.state = "placing-b";

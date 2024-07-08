@@ -13,6 +13,7 @@ import FeatureFilter from "@arcgis/core/layers/support/FeatureFilter";
 import SceneModification from "@arcgis/core/layers/support/SceneModification";
 import SceneModifications from "@arcgis/core/layers/support/SceneModifications";
 import SceneView from "@arcgis/core/views/SceneView";
+import { createToggle } from "../snippet";
 import { applySlide, findLayerById } from "../utils";
 import DownloadStore from "./DownloadStore";
 import RealisticStore from "./RealisticStore";
@@ -80,8 +81,12 @@ class AppStore extends Accessor {
   constructor(props: AppStoreProperties) {
     super(props);
 
-    whenOnce(() => this.map).then((map) => {
+    whenOnce(() => this.map).then(async (map) => {
+      await map.load();
+
       document.title = map.portalItem.title;
+
+      await map.loadAll();
 
       this.downloadLayer = findLayerById(map, "190697a6c61-layer-314");
       this.uploadLayer = findLayerById(map, "1908858b599-layer-102");
@@ -99,6 +104,16 @@ class AppStore extends Accessor {
       const index = Number.parseInt(e.key);
       if (Number.isInteger(index)) {
         applySlide(this.view, index - 1);
+      } else if (e.key === "c") {
+        snippetToggle();
+      } else if (e.key === " ") {
+        if (stickyNoteShown) {
+          stickyNote?.classList.add("hide");
+        } else {
+          stickyNote?.classList.remove("hide");
+        }
+        stickyNoteShown = !stickyNoteShown;
+        e.stopImmediatePropagation();
       }
     };
 
@@ -130,5 +145,10 @@ class AppStore extends Accessor {
     }
   }
 }
+
+const snippetToggle = createToggle("downloadCodeSnippet");
+
+const stickyNote = document.getElementById("stickyNote");
+let stickyNoteShown = false;
 
 export default AppStore;

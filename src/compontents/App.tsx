@@ -23,6 +23,7 @@ import DownloadStore from "../stores/DownloadStore";
 import RealisticStore from "../stores/RealisticStore";
 import TimeStore from "../stores/TimeStore";
 import UploadStore from "../stores/UploadStore";
+import { ensureViewUIContainer } from "../utils";
 import Download from "./Download";
 import Time from "./Time";
 import Upload from "./Upload";
@@ -60,7 +61,12 @@ class App extends Widget<AppProperties> implements UIActions {
       case ScreenType.Time:
         return <Time store={screenStore}></Time>;
       case ScreenType.Download:
-        return <Download store={screenStore}></Download>;
+        return (
+          <Download
+            store={screenStore}
+            container={ensureViewUIContainer("top-right", "download")}
+          ></Download>
+        );
       case ScreenType.Upload:
         return <Upload store={screenStore}></Upload>;
       case ScreenType.Viewshed:

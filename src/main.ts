@@ -36,13 +36,11 @@ view.popupEnabled = false;
 setViewUI(view.ui);
 (window as any)["view"] = view;
 
-map.loadAll().then(() => {
-  const store = new AppStore({
-    view,
-  });
+const store = new AppStore({
+  view,
+});
 
-  const app = new App({
-    container: "app",
-    store,
-  });
+const app = new App({
+  container: "app",
+  store,
 });

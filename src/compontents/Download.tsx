@@ -9,49 +9,55 @@ import "@esri/calcite-components/dist/components/calcite-card";
 import "@esri/calcite-components/dist/components/calcite-label";
 import "@esri/calcite-components/dist/components/calcite-switch";
 
-import { createToggle } from "../snippet";
 import DownloadStore from "../stores/DownloadStore";
 import { Widget } from "./Widget";
 
 type DownloadProperties = Pick<Download, "store">;
-
-const snippetToggle = createToggle("downloadCodeSnippet");
-
-const stickyNote = document.getElementById("stickyNote");
-let stickyNoteShown = false;
-
-window.onkeydown = (e: KeyboardEvent) => {
-  if (e.key === "c") {
-    snippetToggle();
-  } else if (e.key === " ") {
-    if (stickyNoteShown) {
-      stickyNote?.classList.add("hide");
-    } else {
-      stickyNote?.classList.remove("hide");
-    }
-    stickyNoteShown = !stickyNoteShown;
-    e.stopImmediatePropagation();
-  }
-};
 
 @subclass("arcgis-core-template.Download")
 class Download extends Widget<DownloadProperties> {
   @property()
   store: DownloadStore;
 
-  postInitialize() {}
+  private renderButton() {
+    if (this.store.tool.state === "idle") {
+      if (this.store.area) {
+        return (
+          <div>
+            Selected 17 buildings
+            <calcite-button
+              icon-start="download"
+              width="full"
+              appearance="solid"
+            >
+              Download
+            </calcite-button>
+          </div>
+        );
+      } else {
+        return (
+          <calcite-button
+            onclick={() => this.store.start()}
+            width="full"
+            appearance="solid"
+          >
+            Select download extent
+          </calcite-button>
+        );
+      }
+    } else {
+      return (
+        <calcite-button appearance="outline-fill" width="full">
+          Cancel
+        </calcite-button>
+      );
+    }
+  }
 
   render() {
     return (
       <div>
-        <calcite-card id="download">
-          <calcite-button id="createButton" onclick={() => this.store.start()}>
-            Select download extent
-          </calcite-button>
-          <calcite-button id="cancelButton" style="display:none">
-            Cancel
-          </calcite-button>
-        </calcite-card>
+        <calcite-card class="download">{this.renderButton()}</calcite-card>
       </div>
     );
   }
