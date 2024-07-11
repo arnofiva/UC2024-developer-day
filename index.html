@@ -42,6 +42,15 @@ const buffer = await mesh.toBinaryGLTF();
 downloadBufferAsFile("model.glb", buffer, "model/gltf-binary");</code></pre>
     </div>
 
+    <div class="code-snippet" id="flattenCodeSnippet">
+      <pre><code class="language-js">const query = sceneLayer.createQuery();
+query.multipatchOption = "xyFootprint";
+const { features } = await uploadLayer.queryFeatures(query);
+
+// Use building footprint as filter
+const footprint = features[0].geometry as Polygon;</code></pre>
+    </div>
+
     <div id="stickyNote" class="hide">
       <p>
         Building origin:</br>

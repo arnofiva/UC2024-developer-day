@@ -27,8 +27,8 @@ class TimeStore extends Accessor {
 
     applySlide(view, 0).then(() => {
       view.timeExtent = new TimeExtent({
-        start: new Date("1200-01-01"),
-        end: new Date("1200-01-01"),
+        start: new Date("1200-01-02"),
+        end: new Date("1200-01-02"),
       });
     });
 

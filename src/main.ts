@@ -28,6 +28,7 @@ const map = new WebScene({
 });
 
 const view = new SceneView({
+  qualityProfile: "high",
   container: "viewDiv",
   map,
 });

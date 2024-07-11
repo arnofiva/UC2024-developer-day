@@ -7,12 +7,13 @@ import {
 import { watch, whenOnce } from "@arcgis/core/core/reactiveUtils";
 import Geometry from "@arcgis/core/geometry/Geometry";
 import Polygon from "@arcgis/core/geometry/Polygon";
+import GraphicsLayer from "@arcgis/core/layers/GraphicsLayer";
 import IntegratedMeshLayer from "@arcgis/core/layers/IntegratedMeshLayer";
 import SceneLayer from "@arcgis/core/layers/SceneLayer";
-import FeatureFilter from "@arcgis/core/layers/support/FeatureFilter";
 import SceneModification from "@arcgis/core/layers/support/SceneModification";
 import SceneModifications from "@arcgis/core/layers/support/SceneModifications";
 import SceneView from "@arcgis/core/views/SceneView";
+import { waterGraphic } from "../constants";
 import { createToggle } from "../snippet";
 import { applySlide, findLayerById } from "../utils";
 import DownloadStore from "./DownloadStore";
@@ -43,6 +44,17 @@ class AppStore extends Accessor {
   userStore = new UserStore();
 
   @property()
+  get loading() {
+    return this._loading;
+  }
+
+  @property()
+  private _loading = true;
+
+  @property({ constructOnly: true })
+  deviceId: string;
+
+  @property()
   selectedArea: Geometry;
 
   @property()
@@ -60,8 +72,15 @@ class AppStore extends Accessor {
   @property()
   realisticTrees: SceneLayer;
 
+  @property({ readOnly: true })
+  waterLayer = new GraphicsLayer({
+    graphics: [waterGraphic],
+  });
+
   @property()
   mesh: IntegratedMeshLayer;
+
+  private modifications: SceneModifications;
 
   @property()
   get currentScreenStore() {
@@ -81,6 +100,13 @@ class AppStore extends Accessor {
   constructor(props: AppStoreProperties) {
     super(props);
 
+    let deviceId = localStorage.getItem("deviceId");
+    if (deviceId === null) {
+      deviceId = crypto.randomUUID();
+      localStorage.setItem("deviceId", deviceId);
+    }
+    this.deviceId = deviceId;
+
     whenOnce(() => this.map).then(async (map) => {
       await map.load();
 
@@ -93,12 +119,26 @@ class AppStore extends Accessor {
       this.lowPolyTrees = findLayerById(map, "19058d7d9f2-layer-87");
       this.realisticTrees = findLayerById(map, "19058d7d2b5-layer-86");
       this.mesh = findLayerById(map, "1904131bf90-layer-113");
-    });
 
-    watch(
-      () => this.uploadedFootprint,
-      () => this.updateFootprintFilter(),
-    );
+      // this.uploadLayer.definitionExpression = `name = '${this.deviceId}' OR name = 'initial-model'`;
+      // const field = this.uploadLayer.fields.find((f) => f.name === "name")!;
+      // field.defaultValue = deviceId;
+
+      this.modifications = this.mesh.modifications;
+
+      map.add(this.waterLayer);
+
+      this.addHandles(
+        watch(
+          () => this.mesh.visible,
+          (visible) => {
+            this.waterLayer.visible = visible;
+          },
+        ),
+      );
+
+      this._loading = false;
+    });
 
     window.onkeydown = (e) => {
       const index = Number.parseInt(e.key);
@@ -106,6 +146,8 @@ class AppStore extends Accessor {
         applySlide(this.view, index - 1);
       } else if (e.key === "c") {
         snippetToggle();
+      } else if (e.key === "v") {
+        snippetFlattenToggle();
       } else if (e.key === " ") {
         if (stickyNoteShown) {
           stickyNote?.classList.add("hide");
@@ -117,11 +159,17 @@ class AppStore extends Accessor {
       }
     };
 
-    this.addHandles({
-      remove: () => {
-        window.onkeydown = null;
+    this.addHandles([
+      watch(
+        () => this.uploadedFootprint,
+        () => this.updateFootprintFilter(),
+      ),
+      {
+        remove: () => {
+          window.onkeydown = null;
+        },
       },
-    });
+    ]);
   }
 
   private async updateFootprintFilter() {
@@ -129,24 +177,27 @@ class AppStore extends Accessor {
     const layerView = await this.view.whenLayerView(this.downloadLayer);
 
     if (footprint) {
-      this.mesh.modifications = new SceneModifications([
+      const modifications = this.modifications
+        ? this.modifications.clone()
+        : new SceneModifications();
+
+      modifications.add(
         new SceneModification({
           geometry: footprint,
           type: "replace",
         }),
-      ]);
-      layerView.filter = new FeatureFilter({
-        geometry: footprint.extent.center,
-        spatialRelationship: "disjoint",
-      });
+      );
+
+      this.mesh.modifications = modifications;
     } else {
-      this.mesh.modifications = new SceneModifications();
+      this.mesh.modifications = this.modifications;
       layerView.filter = null as any;
     }
   }
 }
 
 const snippetToggle = createToggle("downloadCodeSnippet");
+const snippetFlattenToggle = createToggle("flattenCodeSnippet");
 
 const stickyNote = document.getElementById("stickyNote");
 let stickyNoteShown = false;

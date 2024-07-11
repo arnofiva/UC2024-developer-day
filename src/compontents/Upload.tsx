@@ -3,15 +3,11 @@ import {
   subclass,
 } from "@arcgis/core/core/accessorSupport/decorators";
 
-import { tsx } from "@arcgis/core/widgets/support/widget";
-
 import "@esri/calcite-components/dist/components/calcite-card";
 import "@esri/calcite-components/dist/components/calcite-label";
 import "@esri/calcite-components/dist/components/calcite-switch";
 
-import Editor from "@arcgis/core/widgets/Editor";
 import UploadStore from "../stores/UploadStore";
-import { ensureViewUIContainer } from "../utils";
 import { Widget } from "./Widget";
 
 type UploadProperties = Pick<Upload, "store">;
@@ -21,20 +17,17 @@ class Upload extends Widget<UploadProperties> {
   @property()
   store: UploadStore;
 
-  postInitialize() {}
+  postInitialize() {
+    const view = this.store.view;
+
+    view.ui.add(this.store.editor, "top-right");
+
+    this.addHandles({ remove: () => view.ui.remove(this.store.editor) });
+  }
 
   renderButton() {}
 
-  render() {
-    return (
-      <div>
-        <Editor
-          view={this.store.view}
-          container={ensureViewUIContainer("top-right", "editor")}
-        ></Editor>
-      </div>
-    );
-  }
+  render() {}
 }
 
 export default Upload;

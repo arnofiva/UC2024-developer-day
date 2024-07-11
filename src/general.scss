@@ -61,6 +61,14 @@ calcite-tile {
   flex: 1;
 }
 
+calcite-scrim.loader {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+}
+
 /* Time slider */
 
 .esri-time-slider {
@@ -127,11 +135,12 @@ calcite-tile {
   margin: 0;
   width: var(--code-width);
   margin-left: var(--code-width-close);
+  margin-bottom: 140px;
 }
 
-pre[class*="language-"] {
-  margin-bottom: 119px;
-}
+// pre[class*="language-"] {
+//   margin-bottom: 140px;
+// }
 
 .token.operator,
 .token.entity,

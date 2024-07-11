@@ -23,6 +23,7 @@ import DownloadStore from "../stores/DownloadStore";
 import RealisticStore from "../stores/RealisticStore";
 import TimeStore from "../stores/TimeStore";
 import UploadStore from "../stores/UploadStore";
+import ViewshedStore from "../stores/ViewshedStore";
 import { ensureViewUIContainer } from "../utils";
 import Download from "./Download";
 import Time from "./Time";
@@ -70,7 +71,12 @@ class App extends Widget<AppProperties> implements UIActions {
       case ScreenType.Upload:
         return <Upload store={screenStore}></Upload>;
       case ScreenType.Viewshed:
-        return <Viewshed store={screenStore}></Viewshed>;
+        return (
+          <Viewshed
+            store={screenStore}
+            container={ensureViewUIContainer("top-right", "viewshed")}
+          ></Viewshed>
+        );
     }
   }
 
@@ -81,6 +87,9 @@ class App extends Widget<AppProperties> implements UIActions {
           <Header view={this.store.view} store={this.store}></Header>
 
           <div id="content" afterCreate={(e: any) => this.bindView(e)}>
+            <calcite-scrim class={this.store.loading ? "loader" : "hide"}>
+              <calcite-loader text="Loading scene"></calcite-loader>
+            </calcite-scrim>
             <div id="screen">{this.renderScreen()}</div>
           </div>
 
@@ -110,7 +119,9 @@ class App extends Widget<AppProperties> implements UIActions {
       case ScreenType.Upload:
         return new UploadStore({ appStore: this.store });
       case ScreenType.Realistic:
-        return new RealisticStore({ view: view });
+        return new RealisticStore({ view });
+      case ScreenType.Viewshed:
+        return new ViewshedStore({ view });
       default:
         throw new Error();
     }

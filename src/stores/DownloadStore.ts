@@ -31,8 +31,10 @@ type DownloadStoreProperties = Pick<
 
 const THE_POINT = new Point({
   spatialReference: SpatialReference.WebMercator,
-  longitude: 8.525363607720573,
-  latitude: 47.36629893125558,
+  // longitude: 8.525363607720573,
+  longitude: 8.52535751,
+  // latitude: 47.36629893125558,
+  latitude: 47.36630636,
   z: 417.43148594,
 });
 
@@ -482,7 +484,6 @@ class ExtentTool extends Accessor {
         const graphic = event.graphic;
 
         if (this.state === "placing-a") {
-          debugger;
           (graphic.geometry as Point).x = THE_POINT.x;
           (graphic.geometry as Point).y = THE_POINT.y;
           (graphic.geometry as Point).z = THE_POINT.z;

@@ -19,32 +19,32 @@ const TILES = [
   {
     screenType: ScreenType.Time,
     icon: "clock",
-    heading: "Change over time",
+    heading: "Filter by time",
     description: "Visualize past and future development",
   },
   {
     screenType: ScreenType.Download,
     icon: "download",
-    heading: "Export buildings",
-    description: "Download existing system of record...",
+    heading: "Export 3D context",
+    description: "Download buildings and terrain",
   },
   {
     screenType: ScreenType.Upload,
     icon: "upload",
-    heading: "Upload new design",
-    description: "New 3D model....",
+    heading: "Upload new building",
+    description: "Provide a new design proposal",
   },
   {
     screenType: ScreenType.Realistic,
     icon: "show-multiple-layers-at-a-time",
     heading: "Realistic visualization",
-    description: "...",
+    description: "Using 3D Tiles or I3S integrated mesh",
   },
   {
     screenType: ScreenType.Viewshed,
     icon: "viewshed",
-    heading: "Visbility Analysis",
-    description: "...",
+    heading: "Viewshed analysis",
+    description: "Evaluate visible areas",
   },
 ];
 
