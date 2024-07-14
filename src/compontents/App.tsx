@@ -80,6 +80,20 @@ class App extends Widget<AppProperties> implements UIActions {
     }
   }
 
+  private renderLoader() {
+    if (this.store.loading !== "done") {
+      const text =
+        this.store.loading === "scene"
+          ? "Loading scene..."
+          : "Delete previous uploads...";
+      return (
+        <calcite-scrim class={this.store.loading ? "loader" : "hide"}>
+          <calcite-loader text={text}></calcite-loader>
+        </calcite-scrim>
+      );
+    }
+  }
+
   render() {
     return (
       <div>
@@ -87,9 +101,7 @@ class App extends Widget<AppProperties> implements UIActions {
           <Header view={this.store.view} store={this.store}></Header>
 
           <div id="content" afterCreate={(e: any) => this.bindView(e)}>
-            <calcite-scrim class={this.store.loading ? "loader" : "hide"}>
-              <calcite-loader text="Loading scene"></calcite-loader>
-            </calcite-scrim>
+            {this.renderLoader()}
             <div id="screen">{this.renderScreen()}</div>
           </div>
 

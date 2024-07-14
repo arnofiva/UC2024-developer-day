@@ -5,6 +5,7 @@ import {
   subclass,
 } from "@arcgis/core/core/accessorSupport/decorators";
 import { whenOnce } from "@arcgis/core/core/reactiveUtils";
+import FormTemplate from "@arcgis/core/form/FormTemplate";
 import { Polygon, SpatialReference } from "@arcgis/core/geometry";
 import { buffer } from "@arcgis/core/geometry/geometryEngine";
 import GraphicsLayer from "@arcgis/core/layers/GraphicsLayer";
@@ -57,6 +58,18 @@ class UploadStore extends Accessor {
           layer,
           enabled: false,
         },
+        {
+          layer: props.appStore.uploadLayer,
+          formTemplate: new FormTemplate({
+            elements: [
+              {
+                type: "field",
+                fieldName: "name",
+                visibilityExpression: "false",
+              },
+            ],
+          }),
+        },
       ],
       tooltipOptions: {
         enabled: true,
@@ -66,6 +79,14 @@ class UploadStore extends Accessor {
         featureSources: [{ enabled: true, layer: this.siteLayer }],
       },
     });
+
+    this.addHandles(
+      this.editor.on("sketch-create", (e) => {
+        if (e.detail.state === "complete") {
+          e.detail.graphic.setAttribute("name", this.appStore.deviceId);
+        }
+      }),
+    );
 
     const map = view.map;
     map.add(this.siteLayer);

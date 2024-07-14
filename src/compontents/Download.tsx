@@ -6,6 +6,7 @@ import {
 import { tsx } from "@arcgis/core/widgets/support/widget";
 
 import "@esri/calcite-components/dist/components/calcite-card";
+import "@esri/calcite-components/dist/components/calcite-icon";
 import "@esri/calcite-components/dist/components/calcite-label";
 import "@esri/calcite-components/dist/components/calcite-switch";
 
@@ -24,11 +25,23 @@ class Download extends Widget<DownloadProperties> {
       if (this.store.area) {
         return (
           <div>
-            Selected 17 buildings
+            <calcite-label
+              // scale="m"
+              layout="inline"
+            >
+              <calcite-icon
+                // class="row-span-full place-self-center"
+                icon="urban-model"
+                scale="m"
+              ></calcite-icon>
+              Selected features: 28
+            </calcite-label>
             <calcite-button
               icon-start="download"
               width="full"
               appearance="solid"
+              href="./model.glb"
+              download="model.glb"
             >
               Download
             </calcite-button>

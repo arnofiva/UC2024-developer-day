@@ -16,7 +16,12 @@ import { Widget } from "./Widget";
 
 type TimeProperties = Pick<Time, "store">;
 
-const SPEED_FACTORS = [0.1, 0.2, 0.5, 1, 2, 3, 5];
+const TICKS = [1150, 1300, 1500, 1700, 1900, 2050];
+
+const STOPS = [
+  1150, 1200, 1250, 1300, 1350, 1400, 1450, 1500, 1550, 1600, 1650, 1700, 1750,
+  1800, 1850, 1900, 1950, 2000, 2024, 2050,
+].map((year) => new Date(Date.UTC(year, 0)));
 
 @subclass("arcgis-core-template.Time")
 class Time extends Widget<TimeProperties> {
@@ -26,32 +31,43 @@ class Time extends Widget<TimeProperties> {
   postInitialize() {}
 
   render() {
-    const timeExtent = this.store.view.timeExtent;
-    const { fullTimeExtent, loop, mode, playRate, stops } =
-      this.store.timeSliderConfig;
-
-    const infoTextElement = document.getElementById("time-period");
-    let activePeriod = "No Time Filtering";
-    if (timeExtent?.start) {
-      activePeriod = "Current/Past Time";
-      if (timeExtent.start >= new Date("2030-01-21")) {
-        activePeriod = "Future Time (Near Term)";
-      } else if (timeExtent.start >= new Date("2028-01-21")) {
-        activePeriod = "Future Time (Medium Term)";
-      }
-    }
-
     return (
       <div>
         <TimeSlider
           container={ensureViewUIContainer("manual", "time-slider")}
           view={this.store.view}
-          fullTimeExtent={fullTimeExtent}
-          timeExtent={timeExtent}
-          loop={loop}
-          mode={mode}
-          playRate={playRate}
-          stops={stops}
+          fullTimeExtent={{
+            start: STOPS[0],
+            end: STOPS[STOPS.length - 1],
+          }}
+          timeExtent={this.store.view.timeExtent}
+          mode="instant"
+          tickConfigs={[
+            {
+              mode: "position",
+              values: TICKS.map((year) => Date.UTC(year, 0)),
+              labelsVisible: true,
+              labelFormatFunction: (value) => {
+                const date = new Date(value);
+                return `${date.getUTCFullYear()}`;
+              },
+              tickCreatedFunction: (_, tickElement, labelElement) => {
+                tickElement.classList.add("year-ticks");
+                labelElement?.classList.add("year-labels");
+              },
+            },
+            {
+              mode: "position",
+              values: [Date.UTC(2024, 0)],
+              labelsVisible: true,
+              labelFormatFunction: () => {
+                return "Present";
+              },
+            },
+          ]}
+          stops={{
+            dates: STOPS,
+          }}
         ></TimeSlider>
       </div>
     );

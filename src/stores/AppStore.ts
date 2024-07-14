@@ -49,7 +49,7 @@ class AppStore extends Accessor {
   }
 
   @property()
-  private _loading = true;
+  private _loading: "scene" | "delete-models" | "done" = "scene";
 
   @property({ constructOnly: true })
   deviceId: string;
@@ -120,9 +120,9 @@ class AppStore extends Accessor {
       this.realisticTrees = findLayerById(map, "19058d7d2b5-layer-86");
       this.mesh = findLayerById(map, "1904131bf90-layer-113");
 
-      // this.uploadLayer.definitionExpression = `name = '${this.deviceId}' OR name = 'initial-model'`;
-      // const field = this.uploadLayer.fields.find((f) => f.name === "name")!;
-      // field.defaultValue = deviceId;
+      this.uploadLayer.definitionExpression = `name = '${this.deviceId}'`;
+      const field = this.uploadLayer.fields.find((f) => f.name === "name")!;
+      field.defaultValue = deviceId;
 
       this.modifications = this.mesh.modifications;
 
@@ -137,7 +137,17 @@ class AppStore extends Accessor {
         ),
       );
 
-      this._loading = false;
+      this._loading = "delete-models";
+      const query = this.uploadLayer.createQuery();
+      query.returnGeometry = false;
+      const { features } = await this.uploadLayer.queryFeatures(query);
+      if (features.length) {
+        await this.uploadLayer.applyEdits({
+          deleteFeatures: features,
+        });
+      }
+
+      this._loading = "done";
     });
 
     window.onkeydown = (e) => {

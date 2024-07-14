@@ -83,6 +83,14 @@ calcite-scrim.loader {
   padding-bottom: 20px;
 }
 
+.year-ticks {
+  display: none;
+}
+
+.year-labels {
+  margin-top: 5px !important;
+}
+
 #user-menu {
   position: absolute;
   top: 65px;
