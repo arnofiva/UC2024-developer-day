@@ -49,7 +49,8 @@ class AppStore extends Accessor {
   }
 
   @property()
-  private _loading: "scene" | "delete-models" | "done" = "scene";
+  private _loading: "scene" | "delete-models" | "preload-slides" | "done" =
+    "scene";
 
   @property({ constructOnly: true })
   deviceId: string;
@@ -126,17 +127,6 @@ class AppStore extends Accessor {
 
       this.modifications = this.mesh.modifications;
 
-      map.add(this.waterLayer);
-
-      this.addHandles(
-        watch(
-          () => this.mesh.visible,
-          (visible) => {
-            this.waterLayer.visible = visible;
-          },
-        ),
-      );
-
       this._loading = "delete-models";
       const query = this.uploadLayer.createQuery();
       query.returnGeometry = false;
@@ -147,18 +137,41 @@ class AppStore extends Accessor {
         });
       }
 
+      this._loading = "preload-slides";
+
+      const slides = map.presentation.slides;
+      const view = this.view;
+      for (const slide of slides) {
+        slide.applyTo(view, { animate: false });
+        await whenOnce(() => !view.updating);
+      }
+      slides.getItemAt(0).applyTo(view, { animate: false });
+
       this._loading = "done";
+
+      map.add(this.waterLayer);
+
+      this.addHandles(
+        watch(
+          () => this.mesh.visible,
+          (visible) => {
+            this.waterLayer.visible = visible;
+          },
+        ),
+      );
     });
 
     window.onkeydown = (e) => {
-      const index = Number.parseInt(e.key);
+      const key = e.key;
+
+      const index = Number.parseInt(key);
       if (Number.isInteger(index)) {
         applySlide(this.view, index - 1);
-      } else if (e.key === "c") {
+      } else if (key === "c") {
         snippetToggle();
-      } else if (e.key === "v") {
+      } else if (key === "v") {
         snippetFlattenToggle();
-      } else if (e.key === " ") {
+      } else if (key === " ") {
         if (stickyNoteShown) {
           stickyNote?.classList.add("hide");
         } else {

@@ -80,15 +80,22 @@ class App extends Widget<AppProperties> implements UIActions {
     }
   }
 
+  private loaderText() {
+    switch (this.store.loading) {
+      case "scene":
+        return "Loading scene...";
+      case "delete-models":
+        return "Delete previous uploads...";
+      case "preload-slides":
+        return "Preload viewpoints";
+    }
+  }
+
   private renderLoader() {
     if (this.store.loading !== "done") {
-      const text =
-        this.store.loading === "scene"
-          ? "Loading scene..."
-          : "Delete previous uploads...";
       return (
         <calcite-scrim class={this.store.loading ? "loader" : "hide"}>
-          <calcite-loader text={text}></calcite-loader>
+          <calcite-loader text={this.loaderText()}></calcite-loader>
         </calcite-scrim>
       );
     }
