@@ -18,11 +18,13 @@ class Upload extends Widget<UploadProperties> {
   store: UploadStore;
 
   postInitialize() {
-    const view = this.store.view;
+    const view = this.store.appStore.sceneStore.view;
 
-    view.ui.add(this.store.editor, "top-right");
+    if (view) {
+      view.ui.add(this.store.editor, "bottom-right");
 
-    this.addHandles({ remove: () => view.ui.remove(this.store.editor) });
+      this.addHandles({ remove: () => view.ui.remove(this.store.editor) });
+    }
   }
 
   renderButton() {}

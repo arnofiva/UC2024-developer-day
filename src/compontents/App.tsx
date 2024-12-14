@@ -5,55 +5,49 @@ import {
 
 import { tsx } from "@arcgis/core/widgets/support/widget";
 
-import Fullscreen from "@arcgis/core/widgets/Fullscreen";
 import AppStore from "../stores/AppStore";
 import Flow from "./Flow";
-import Header from "./Header";
 import { Widget } from "./Widget";
 
 import { debounce } from "@arcgis/core/core/promiseUtils";
-import { whenOnce } from "@arcgis/core/core/reactiveUtils";
 import SceneLayer from "@arcgis/core/layers/SceneLayer";
 import { getTimeSliderSettingsFromWebDocument } from "@arcgis/core/support/timeUtils";
-import Expand from "@arcgis/core/widgets/Expand";
-import LayerList from "@arcgis/core/widgets/LayerList";
 import "@esri/calcite-components/dist/components/calcite-shell";
+import "@esri/calcite-components/dist/components/calcite-shell-panel";
 import { ScreenType, UIActions } from "../interfaces";
 import DownloadStore from "../stores/DownloadStore";
 import RealisticStore from "../stores/RealisticStore";
 import TimeStore from "../stores/TimeStore";
 import UploadStore from "../stores/UploadStore";
 import ViewshedStore from "../stores/ViewshedStore";
-import { ensureViewUIContainer } from "../utils";
+import { ensureViewUIContainer, setViewUI } from "../utils";
 import Download from "./Download";
+import Splash from "./Splash";
 import Time from "./Time";
 import Upload from "./Upload";
 import Viewshed from "./Viewshed";
 
+import { ArcgisSceneCustomEvent } from "@arcgis/map-components";
+import "@arcgis/map-components/dist/components/arcgis-expand";
+import "@arcgis/map-components/dist/components/arcgis-fullscreen";
+import "@arcgis/map-components/dist/components/arcgis-layer-list";
+import "@arcgis/map-components/dist/components/arcgis-placement";
+import "@arcgis/map-components/dist/components/arcgis-scene";
+import Navigation from "./Navigation";
+
 type AppProperties = Pick<App, "store">;
 
-@subclass("arcgis-core-template.App")
+@subclass()
 class App extends Widget<AppProperties> implements UIActions {
   @property()
   store: AppStore;
 
-  postInitialize(): void {
-    whenOnce(() => this.store.view).then((view) => {
-      const fullscreen = new Fullscreen({ view });
-      view.ui.add(fullscreen, "top-left");
-
-      view.ui.add(
-        new Expand({
-          view,
-          content: new LayerList({ view }),
-        }),
-        "bottom-right",
-      );
-    });
-  }
-
-  private bindView(element: HTMLDivElement) {
-    element.appendChild(this.store.view.container);
+  private bindView(arcgisScene: HTMLArcgisSceneElement) {
+    const view = arcgisScene.view;
+    this.store.sceneStore.view = view;
+    view.popupEnabled = false;
+    setViewUI(view.ui);
+    (window as any)["view"] = view;
   }
 
   private renderScreen() {
@@ -80,35 +74,32 @@ class App extends Widget<AppProperties> implements UIActions {
     }
   }
 
-  private loaderText() {
-    switch (this.store.loading) {
-      case "scene":
-        return "Loading scene...";
-      case "delete-models":
-        return "Delete previous uploads...";
-      case "preload-slides":
-        return "Preload viewpoints";
-    }
-  }
-
-  private renderLoader() {
-    if (this.store.loading !== "done") {
-      return (
-        <calcite-scrim class={this.store.loading ? "loader" : "hide"}>
-          <calcite-loader text={this.loaderText()}></calcite-loader>
-        </calcite-scrim>
-      );
-    }
-  }
-
   render() {
     return (
       <div>
+        <Splash store={this.store}></Splash>
         <calcite-shell>
-          <Header view={this.store.view} store={this.store}></Header>
+          <Navigation store={this.store}></Navigation>
 
-          <div id="content" afterCreate={(e: any) => this.bindView(e)}>
-            {this.renderLoader()}
+          <calcite-panel>
+            <arcgis-scene
+              item-id={this.store.webSceneId}
+              onArcgisViewReadyChange={(e: ArcgisSceneCustomEvent<void>) =>
+                this.bindView(e.target)
+              }
+            >
+              <arcgis-placement position="top-left">
+                <arcgis-Fullscreen></arcgis-Fullscreen>
+              </arcgis-placement>
+              <arcgis-placement position="top-right">
+                <arcgis-expand>
+                  <arcgis-layer-list></arcgis-layer-list>
+                </arcgis-expand>
+              </arcgis-placement>
+            </arcgis-scene>
+          </calcite-panel>
+
+          <div id="content">
             <div id="screen">{this.renderScreen()}</div>
           </div>
 
@@ -119,8 +110,12 @@ class App extends Widget<AppProperties> implements UIActions {
   }
 
   private async createScreen(screen: ScreenType) {
-    const view = this.store.view;
-    const map = this.store.map;
+    const view = this.store.sceneStore.view;
+    const map = this.store.sceneStore.map;
+
+    if (!view || !map) {
+      throw new Error();
+    }
 
     switch (screen) {
       case ScreenType.Time:

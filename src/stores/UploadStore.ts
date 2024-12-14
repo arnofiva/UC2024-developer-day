@@ -13,7 +13,6 @@ import FeatureFilter from "@arcgis/core/layers/support/FeatureFilter";
 import FillSymbol3DLayer from "@arcgis/core/symbols/FillSymbol3DLayer";
 import PolygonSymbol3D from "@arcgis/core/symbols/PolygonSymbol3D";
 import StylePattern3D from "@arcgis/core/symbols/patterns/StylePattern3D";
-import SceneView from "@arcgis/core/views/SceneView";
 import Editor from "@arcgis/core/widgets/Editor";
 import { ScreenType } from "../interfaces";
 import { applySlide } from "../utils";
@@ -27,9 +26,6 @@ class UploadStore extends Accessor {
 
   @property({ constructOnly: true })
   appStore: AppStore;
-
-  @property({ aliasOf: "appStore.view" })
-  view: SceneView;
 
   @property()
   editor: Editor;
@@ -49,7 +45,7 @@ class UploadStore extends Accessor {
 
     const layer = props.appStore.downloadLayer;
 
-    const view = props.appStore.view;
+    const view = props.appStore.sceneStore.view!;
 
     this.editor = new Editor({
       view,
@@ -119,7 +115,8 @@ class UploadStore extends Accessor {
   }
 
   private async initializeStore() {
-    applySlide(this.view, 2);
+    const view = this.appStore.sceneStore.view!;
+    applySlide(view, 2);
 
     this.addHandles(
       this.appStore.uploadLayer.on("edits", async (edits) => {
@@ -141,7 +138,7 @@ class UploadStore extends Accessor {
       ];
 
       const layerViews = await Promise.all(
-        sceneLayers.map((l) => this.view.whenLayerView(l)),
+        sceneLayers.map((l) => view.whenLayerView(l)),
       );
 
       layerViews.forEach(

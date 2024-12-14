@@ -1,10 +1,7 @@
-import WebScene from "@arcgis/core/WebScene";
 import * as kernel from "@arcgis/core/kernel";
-import SceneView from "@arcgis/core/views/SceneView";
 import "@esri/calcite-components/dist/calcite/calcite.css";
 import App from "./compontents/App";
 import AppStore from "./stores/AppStore";
-import { setViewUI } from "./utils";
 
 console.log(`Using ArcGIS Maps SDK for JavaScript v${kernel.fullVersion}`);
 
@@ -18,27 +15,8 @@ const params = new URLSearchParams(document.location.search.slice(1));
 
 const webSceneId = params.get("webscene") || "c1e17338b7324a478f65d3507f05b3dd";
 
-const map = new WebScene({
-  portalItem: {
-    id: webSceneId,
-    // portal: {
-    //   url: portalUrl,
-    // },
-  },
-});
-
-const view = new SceneView({
-  qualityProfile: "high",
-  container: "viewDiv",
-  map,
-});
-
-view.popupEnabled = false;
-setViewUI(view.ui);
-(window as any)["view"] = view;
-
 const store = new AppStore({
-  view,
+  webSceneId,
 });
 
 const app = new App({

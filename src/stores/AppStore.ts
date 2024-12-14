@@ -1,4 +1,3 @@
-import WebScene from "@arcgis/core/WebScene";
 import Accessor from "@arcgis/core/core/Accessor";
 import {
   property,
@@ -12,18 +11,18 @@ import IntegratedMeshLayer from "@arcgis/core/layers/IntegratedMeshLayer";
 import SceneLayer from "@arcgis/core/layers/SceneLayer";
 import SceneModification from "@arcgis/core/layers/support/SceneModification";
 import SceneModifications from "@arcgis/core/layers/support/SceneModifications";
-import SceneView from "@arcgis/core/views/SceneView";
 import { waterGraphic } from "../constants";
 import { createToggle } from "../snippet";
 import { applySlide, findLayerById } from "../utils";
 import DownloadStore from "./DownloadStore";
 import RealisticStore from "./RealisticStore";
+import SceneStore from "./SceneStore";
 import TimeStore from "./TimeStore";
 import UploadStore from "./UploadStore";
 import UserStore from "./UserStore";
 import ViewshedStore from "./ViewshedStore";
 
-type AppStoreProperties = Pick<AppStore, "view">;
+type AppStoreProperties = Pick<AppStore, "webSceneId">;
 
 export type ScreenStoreUnion =
   | TimeStore
@@ -35,10 +34,13 @@ export type ScreenStoreUnion =
 @subclass("arcgis-core-template.AppStore")
 class AppStore extends Accessor {
   @property({ constructOnly: true })
-  view: SceneView;
+  webSceneId: string;
 
-  @property({ aliasOf: "view.map" })
-  map: WebScene;
+  @property({ constructOnly: true })
+  sceneStore = new SceneStore();
+
+  @property()
+  title: string;
 
   @property({ constructOnly: true })
   userStore = new UserStore();
@@ -108,10 +110,14 @@ class AppStore extends Accessor {
     }
     this.deviceId = deviceId;
 
-    whenOnce(() => this.map).then(async (map) => {
+    whenOnce(() => this.sceneStore.view).then(async (view) => {
+      const map = this.sceneStore.map;
+
+      if (!map) throw Error();
+
       await map.load();
 
-      document.title = map.portalItem.title;
+      this.title = document.title = map.portalItem.title;
 
       await map.loadAll();
 
@@ -140,7 +146,6 @@ class AppStore extends Accessor {
       this._loading = "preload-slides";
 
       const slides = map.presentation.slides;
-      const view = this.view;
       for (const slide of slides) {
         slide.applyTo(view, { animate: false });
         await whenOnce(() => !view.updating);
@@ -164,9 +169,14 @@ class AppStore extends Accessor {
     window.onkeydown = (e) => {
       const key = e.key;
 
+      const view = this.sceneStore.view;
+      if (!view) {
+        return;
+      }
+
       const index = Number.parseInt(key);
       if (Number.isInteger(index)) {
-        applySlide(this.view, index - 1);
+        applySlide(view, index - 1);
       } else if (key === "c") {
         snippetToggle();
       } else if (key === "v") {
@@ -196,8 +206,13 @@ class AppStore extends Accessor {
   }
 
   private async updateFootprintFilter() {
+    const view = this.sceneStore.view;
+    if (!view) {
+      return;
+    }
+
     const footprint = this.uploadedFootprint;
-    const layerView = await this.view.whenLayerView(this.downloadLayer);
+    const layerView = await view.whenLayerView(this.downloadLayer);
 
     if (footprint) {
       const modifications = this.modifications

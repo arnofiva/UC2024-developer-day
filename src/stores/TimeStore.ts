@@ -1,9 +1,9 @@
-import TimeExtent from "@arcgis/core/TimeExtent";
 import Accessor from "@arcgis/core/core/Accessor";
 import {
   property,
   subclass,
 } from "@arcgis/core/core/accessorSupport/decorators";
+import TimeExtent from "@arcgis/core/time/TimeExtent";
 import SceneView from "@arcgis/core/views/SceneView";
 import { ScreenType } from "../interfaces";
 import { applySlide } from "../utils";

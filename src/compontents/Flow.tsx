@@ -1,8 +1,3 @@
-import {
-  property,
-  subclass,
-} from "@arcgis/core/core/accessorSupport/decorators";
-
 import { tsx } from "@arcgis/core/widgets/support/widget";
 
 import "@esri/calcite-components/dist/components/calcite-shell-panel";
@@ -11,9 +6,6 @@ import "@esri/calcite-components/dist/components/calcite-tile-group";
 
 import { ScreenType, UIActions } from "../interfaces";
 import AppStore from "../stores/AppStore";
-import { Widget } from "./Widget";
-
-type FlowProperties = Pick<Flow, "store" | "uiActions">;
 
 const TILES = [
   {
@@ -48,45 +40,38 @@ const TILES = [
   },
 ];
 
-@subclass()
-class Flow extends Widget<FlowProperties> {
-  @property()
-  store: AppStore;
-
-  @property()
+const Flow = ({
+  uiActions,
+  store,
+}: {
   uiActions: UIActions;
-
-  postInitialize() {}
-
-  render() {
-    return (
-      <div>
-        <calcite-shell-panel
-          id="bottomPanel"
-          slot="panel-bottom"
-          position="start"
-        >
-          <calcite-tile-group selection-mode="single-persist">
-            {TILES.map((tile) => (
-              <calcite-tile
-                selected={
-                  this.store.currentScreenStore?.type === tile.screenType
-                }
-                input-alignment="end"
-                input-enabled="true"
-                icon={tile.icon}
-                heading={tile.heading}
-                description={tile.description}
-                onCalciteTileSelect={() => {
-                  this.uiActions.selectScreen(tile.screenType);
-                }}
-              ></calcite-tile>
-            ))}
-          </calcite-tile-group>
-        </calcite-shell-panel>
-      </div>
-    );
-  }
-}
+  store: AppStore;
+}) => {
+  return (
+    <div>
+      <calcite-shell-panel
+        id="bottomPanel"
+        slot="panel-bottom"
+        position="start"
+      >
+        <calcite-tile-group selection-mode="single-persist">
+          {TILES.map((tile) => (
+            <calcite-tile
+              selected={store.currentScreenStore?.type === tile.screenType}
+              input-alignment="end"
+              input-enabled="true"
+              icon={tile.icon}
+              heading={tile.heading}
+              description={tile.description}
+              onCalciteTileSelect={() => {
+                uiActions.selectScreen(tile.screenType);
+              }}
+            ></calcite-tile>
+          ))}
+        </calcite-tile-group>
+      </calcite-shell-panel>
+    </div>
+  );
+};
 
 export default Flow;
