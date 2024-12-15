@@ -5,7 +5,7 @@ import { tsx } from "@arcgis/core/widgets/support/widget";
 import "@esri/calcite-components/dist/components/calcite-shell";
 import { ScreenType } from "../interfaces";
 import { ensureViewUIContainer } from "../utils";
-import Download from "./Download";
+import DownloadScreen from "./DownloadScreen";
 import TimeScreen from "./TimeScreen";
 import Upload from "./Upload";
 import Viewshed from "./Viewshed";
@@ -16,12 +16,7 @@ function renderScreen(store: AppStore) {
     case ScreenType.Time:
       return <TimeScreen store={screenStore}></TimeScreen>;
     case ScreenType.Download:
-      return (
-        <Download
-          store={screenStore}
-          container={ensureViewUIContainer("top-right", "download")}
-        ></Download>
-      );
+      return <DownloadScreen store={screenStore}></DownloadScreen>;
     case ScreenType.Upload:
       return <Upload store={screenStore}></Upload>;
     case ScreenType.Viewshed:
@@ -34,7 +29,7 @@ function renderScreen(store: AppStore) {
   }
 }
 
-const Screen = ({ store }: { store: AppStore }) => {
+const AppScreen = ({ store }: { store: AppStore }) => {
   return (
     <calcite-shell id="screen" content-behind="true">
       {renderScreen(store)}
@@ -42,4 +37,4 @@ const Screen = ({ store }: { store: AppStore }) => {
   );
 };
 
-export default Screen;
+export default AppScreen;

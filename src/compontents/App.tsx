@@ -27,13 +27,11 @@ import Splash from "./Splash";
 
 import { ArcgisSceneCustomEvent } from "@arcgis/map-components";
 import "@arcgis/map-components/dist/components/arcgis-compass";
-import "@arcgis/map-components/dist/components/arcgis-expand";
-import "@arcgis/map-components/dist/components/arcgis-layer-list";
 import "@arcgis/map-components/dist/components/arcgis-navigation-toggle";
 import "@arcgis/map-components/dist/components/arcgis-placement";
 import "@arcgis/map-components/dist/components/arcgis-scene";
 import "@arcgis/map-components/dist/components/arcgis-zoom";
-import Screen from "./Screen";
+import AppScreen from "./AppScreen";
 
 type AppProperties = Pick<App, "store">;
 
@@ -57,26 +55,17 @@ class App extends Widget<AppProperties> implements UIActions {
         <calcite-shell>
           <Navigation store={this.store}></Navigation>
 
-          <calcite-panel>
-            <arcgis-scene
-              item-id={this.store.webSceneId}
-              onArcgisViewReadyChange={(e: ArcgisSceneCustomEvent<void>) =>
-                this.bindView(e.target)
-              }
-            >
-              <arcgis-zoom position="top-left"></arcgis-zoom>
-              <arcgis-navigation-toggle position="top-left"></arcgis-navigation-toggle>
-              <arcgis-compass position="top-left"></arcgis-compass>
-              <arcgis-placement position="top-right">
-                <arcgis-expand>
-                  <arcgis-layer-list></arcgis-layer-list>
-                </arcgis-expand>
-              </arcgis-placement>
-              <arcgis-placement position="manual">
-                <Screen store={this.store}></Screen>
-              </arcgis-placement>
-            </arcgis-scene>
-          </calcite-panel>
+          <AppScreen store={this.store}></AppScreen>
+          <arcgis-scene
+            item-id={this.store.webSceneId}
+            onArcgisViewReadyChange={(e: ArcgisSceneCustomEvent<void>) =>
+              this.bindView(e.target)
+            }
+          >
+            <arcgis-zoom position="top-left"></arcgis-zoom>
+            <arcgis-navigation-toggle position="top-left"></arcgis-navigation-toggle>
+            <arcgis-compass position="top-left"></arcgis-compass>
+          </arcgis-scene>
 
           <Flow uiActions={this} store={this.store}></Flow>
         </calcite-shell>
