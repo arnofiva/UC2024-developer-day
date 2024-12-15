@@ -12,7 +12,7 @@ import { Widget } from "./Widget";
 
 type UploadProperties = Pick<Upload, "store">;
 
-@subclass("arcgis-core-template.Upload")
+@subclass()
 class Upload extends Widget<UploadProperties> {
   @property()
   store: UploadStore;

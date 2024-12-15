@@ -13,7 +13,7 @@ import { applySlide } from "../utils";
 
 type ViewshedStoreProperties = Pick<ViewshedStore, "view">;
 
-@subclass("arcgis-core-template.ViewshedStore")
+@subclass()
 class ViewshedStore extends Accessor {
   readonly type = ScreenType.Viewshed;
 

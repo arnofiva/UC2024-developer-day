@@ -38,7 +38,7 @@ const THE_POINT = new Point({
   z: 417.43148594,
 });
 
-@subclass("arcgis-core-template.DownloadStore")
+@subclass()
 class DownloadStore extends Accessor {
   readonly type = ScreenType.Download;
 

@@ -10,7 +10,7 @@ import { applySlide } from "../utils";
 
 type TimeStoreProperties = Pick<TimeStore, "view" | "timeSliderConfig">;
 
-@subclass("arcgis-core-template.TimeStore")
+@subclass()
 class TimeStore extends Accessor {
   readonly type = ScreenType.Time;
 

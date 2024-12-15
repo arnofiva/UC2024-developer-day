@@ -14,7 +14,7 @@ import { Widget } from "./Widget";
 
 type ViewshedProperties = Pick<Viewshed, "store">;
 
-@subclass("arcgis-core-template.Viewshed")
+@subclass()
 class Viewshed extends Widget<ViewshedProperties> {
   @property()
   store: ViewshedStore;

@@ -15,7 +15,7 @@ import { Widget } from "./Widget";
 
 type DownloadProperties = Pick<Download, "store">;
 
-@subclass("arcgis-core-template.Download")
+@subclass()
 class Download extends Widget<DownloadProperties> {
   @property()
   store: DownloadStore;
@@ -29,11 +29,7 @@ class Download extends Widget<DownloadProperties> {
               // scale="m"
               layout="inline"
             >
-              <calcite-icon
-                // class="row-span-full place-self-center"
-                icon="urban-model"
-                scale="m"
-              ></calcite-icon>
+              <calcite-icon icon="urban-model" scale="m"></calcite-icon>
               Selected features: 28
             </calcite-label>
             <calcite-button

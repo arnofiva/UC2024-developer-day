@@ -20,7 +20,7 @@ IdentityManager.registerOAuthInfos([info]);
   IdentityManager.setOAuthResponseHash(responseHash);
 };
 
-@subclass("arcgis-core-template.UserStore")
+@subclass()
 class UserStore extends Accessor {
   @property()
   get authenticated() {

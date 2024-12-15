@@ -31,7 +31,7 @@ export type ScreenStoreUnion =
   | RealisticStore
   | ViewshedStore;
 
-@subclass("arcgis-core-template.AppStore")
+@subclass()
 class AppStore extends Accessor {
   @property({ constructOnly: true })
   webSceneId: string;
