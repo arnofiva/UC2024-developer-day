@@ -7,11 +7,13 @@ import { tsx } from "@arcgis/core/widgets/support/widget";
 
 import AppStore from "../stores/AppStore";
 import Flow from "./Flow";
+import Navigation from "./Navigation";
 import { Widget } from "./Widget";
 
 import { debounce } from "@arcgis/core/core/promiseUtils";
 import SceneLayer from "@arcgis/core/layers/SceneLayer";
 import { getTimeSliderSettingsFromWebDocument } from "@arcgis/core/support/timeUtils";
+import "@esri/calcite-components/dist/components/calcite-panel";
 import "@esri/calcite-components/dist/components/calcite-shell";
 import "@esri/calcite-components/dist/components/calcite-shell-panel";
 import { ScreenType, UIActions } from "../interfaces";
@@ -20,20 +22,18 @@ import RealisticStore from "../stores/RealisticStore";
 import TimeStore from "../stores/TimeStore";
 import UploadStore from "../stores/UploadStore";
 import ViewshedStore from "../stores/ViewshedStore";
-import { ensureViewUIContainer, setViewUI } from "../utils";
-import Download from "./Download";
+import { setViewUI } from "../utils";
 import Splash from "./Splash";
-import Time from "./Time";
-import Upload from "./Upload";
-import Viewshed from "./Viewshed";
 
 import { ArcgisSceneCustomEvent } from "@arcgis/map-components";
+import "@arcgis/map-components/dist/components/arcgis-compass";
 import "@arcgis/map-components/dist/components/arcgis-expand";
-import "@arcgis/map-components/dist/components/arcgis-fullscreen";
 import "@arcgis/map-components/dist/components/arcgis-layer-list";
+import "@arcgis/map-components/dist/components/arcgis-navigation-toggle";
 import "@arcgis/map-components/dist/components/arcgis-placement";
 import "@arcgis/map-components/dist/components/arcgis-scene";
-import Navigation from "./Navigation";
+import "@arcgis/map-components/dist/components/arcgis-zoom";
+import Screen from "./Screen";
 
 type AppProperties = Pick<App, "store">;
 
@@ -50,30 +50,6 @@ class App extends Widget<AppProperties> implements UIActions {
     (window as any)["view"] = view;
   }
 
-  private renderScreen() {
-    const screenStore = this.store.currentScreenStore;
-    switch (screenStore?.type) {
-      case ScreenType.Time:
-        return <Time store={screenStore}></Time>;
-      case ScreenType.Download:
-        return (
-          <Download
-            store={screenStore}
-            container={ensureViewUIContainer("top-right", "download")}
-          ></Download>
-        );
-      case ScreenType.Upload:
-        return <Upload store={screenStore}></Upload>;
-      case ScreenType.Viewshed:
-        return (
-          <Viewshed
-            store={screenStore}
-            container={ensureViewUIContainer("top-right", "viewshed")}
-          ></Viewshed>
-        );
-    }
-  }
-
   render() {
     return (
       <div>
@@ -88,20 +64,19 @@ class App extends Widget<AppProperties> implements UIActions {
                 this.bindView(e.target)
               }
             >
-              <arcgis-placement position="top-left">
-                <arcgis-Fullscreen></arcgis-Fullscreen>
-              </arcgis-placement>
+              <arcgis-zoom position="top-left"></arcgis-zoom>
+              <arcgis-navigation-toggle position="top-left"></arcgis-navigation-toggle>
+              <arcgis-compass position="top-left"></arcgis-compass>
               <arcgis-placement position="top-right">
                 <arcgis-expand>
                   <arcgis-layer-list></arcgis-layer-list>
                 </arcgis-expand>
               </arcgis-placement>
+              <arcgis-placement position="manual">
+                <Screen store={this.store}></Screen>
+              </arcgis-placement>
             </arcgis-scene>
           </calcite-panel>
-
-          <div id="content">
-            <div id="screen">{this.renderScreen()}</div>
-          </div>
 
           <Flow uiActions={this} store={this.store}></Flow>
         </calcite-shell>

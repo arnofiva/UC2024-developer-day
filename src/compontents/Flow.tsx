@@ -48,29 +48,28 @@ const Flow = ({
   store: AppStore;
 }) => {
   return (
-    <div>
-      <calcite-shell-panel
-        id="bottomPanel"
-        slot="panel-bottom"
-        position="start"
-      >
-        <calcite-tile-group selection-mode="single-persist">
-          {TILES.map((tile) => (
-            <calcite-tile
-              selected={store.currentScreenStore?.type === tile.screenType}
-              input-alignment="end"
-              input-enabled="true"
-              icon={tile.icon}
-              heading={tile.heading}
-              description={tile.description}
-              onCalciteTileSelect={() => {
-                uiActions.selectScreen(tile.screenType);
-              }}
-            ></calcite-tile>
-          ))}
-        </calcite-tile-group>
-      </calcite-shell-panel>
-    </div>
+    <calcite-shell-panel
+      id="bottomPanel"
+      slot="footer"
+      position="start"
+      layout="horizontal"
+    >
+      <calcite-tile-group selection-mode="single-persist">
+        {TILES.map((tile) => (
+          <calcite-tile
+            selected={store.currentScreenStore?.type === tile.screenType}
+            input-alignment="end"
+            input-enabled="true"
+            icon={tile.icon}
+            heading={tile.heading}
+            description={tile.description}
+            onCalciteTileSelect={() => {
+              uiActions.selectScreen(tile.screenType);
+            }}
+          ></calcite-tile>
+        ))}
+      </calcite-tile-group>
+    </calcite-shell-panel>
   );
 };
 
