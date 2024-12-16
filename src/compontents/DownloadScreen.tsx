@@ -54,7 +54,6 @@ const DownloadPanel = ({ store }: { store: DownloadStore }) => {
           slot="footer"
           onclick={() => store.start()}
           width="full"
-          appearance="solid"
         >
           Select download extent
         </calcite-button>

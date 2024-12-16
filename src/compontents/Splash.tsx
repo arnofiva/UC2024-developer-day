@@ -22,6 +22,7 @@ const Loader = ({ store }: { store: AppStore }) => {
 const Splash = ({ store }: { store: AppStore }) => {
   return (
     <calcite-dialog
+      slot="dialogs"
       open
       modal
       escapeDisabled

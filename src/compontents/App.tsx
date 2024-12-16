@@ -50,8 +50,8 @@ class App extends Widget<AppProperties> implements UIActions {
   render() {
     return (
       <div>
-        <Splash store={this.store}></Splash>
         <calcite-shell>
+          <Splash store={this.store}></Splash>
           <Navigation store={this.store}></Navigation>
 
           <AppScreen store={this.store}></AppScreen>
