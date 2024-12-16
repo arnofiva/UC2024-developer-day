@@ -81,11 +81,11 @@ class UploadStore extends Accessor {
       container,
       layerInfos: [
         {
-          layer: this.appStore.downloadLayer,
+          layer: this.appStore.sceneStore.downloadLayer,
           enabled: false,
         },
         {
-          layer: this.appStore.uploadLayer,
+          layer: this.appStore.sceneStore.uploadLayer,
           formTemplate: new FormTemplate({
             elements: [
               {
@@ -128,7 +128,7 @@ class UploadStore extends Accessor {
     applySlide(view, 2);
 
     this.addHandles(
-      this.appStore.uploadLayer.on("edits", async (edits) => {
+      this.appStore.sceneStore.uploadLayer.on("edits", async (edits) => {
         const changed = edits.addedFeatures?.length
           ? edits.addedFeatures
           : edits.updatedFeatures;
@@ -142,8 +142,8 @@ class UploadStore extends Accessor {
     const area = this.appStore.selectedArea;
     if (area) {
       const sceneLayers = [
-        this.appStore.downloadLayer,
-        this.appStore.lowPolyTrees,
+        this.appStore.sceneStore.downloadLayer,
+        this.appStore.sceneStore.lowPolyTrees,
       ];
 
       const layerViews = await Promise.all(
@@ -163,7 +163,7 @@ class UploadStore extends Accessor {
   }
 
   private async updateFootprint(objectId: number) {
-    const uploadLayer = this.appStore.uploadLayer;
+    const uploadLayer = this.appStore.sceneStore.uploadLayer;
 
     const query = uploadLayer.createQuery();
     query.outSpatialReference = SpatialReference.WebMercator;

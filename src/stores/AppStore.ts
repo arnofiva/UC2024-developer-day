@@ -7,13 +7,11 @@ import { watch, whenOnce } from "@arcgis/core/core/reactiveUtils";
 import Geometry from "@arcgis/core/geometry/Geometry";
 import Polygon from "@arcgis/core/geometry/Polygon";
 import GraphicsLayer from "@arcgis/core/layers/GraphicsLayer";
-import IntegratedMeshLayer from "@arcgis/core/layers/IntegratedMeshLayer";
-import SceneLayer from "@arcgis/core/layers/SceneLayer";
 import SceneModification from "@arcgis/core/layers/support/SceneModification";
 import SceneModifications from "@arcgis/core/layers/support/SceneModifications";
 import { waterGraphic } from "../constants";
 import { createToggle } from "../snippet";
-import { applySlide, findLayerById } from "../utils";
+import { applySlide } from "../utils";
 import DownloadStore from "./DownloadStore";
 import RealisticStore from "./RealisticStore";
 import SceneStore from "./SceneStore";
@@ -63,25 +61,10 @@ class AppStore extends Accessor {
   @property()
   uploadedFootprint: Polygon;
 
-  @property()
-  downloadLayer: SceneLayer;
-
-  @property()
-  uploadLayer: SceneLayer;
-
-  @property()
-  lowPolyTrees: SceneLayer;
-
-  @property()
-  realisticTrees: SceneLayer;
-
   @property({ readOnly: true })
   waterLayer = new GraphicsLayer({
     graphics: [waterGraphic],
   });
-
-  @property()
-  mesh: IntegratedMeshLayer;
 
   private modifications: SceneModifications;
 
@@ -109,62 +92,6 @@ class AppStore extends Accessor {
       localStorage.setItem("deviceId", deviceId);
     }
     this.deviceId = deviceId;
-
-    whenOnce(() => this.sceneStore.view).then(async (view) => {
-      const map = this.sceneStore.map;
-
-      if (!map) throw Error();
-
-      await map.load();
-
-      this.title = document.title = map.portalItem.title;
-
-      await map.loadAll();
-
-      this.downloadLayer = findLayerById(map, "190697a6c61-layer-314");
-      this.uploadLayer = findLayerById(map, "1908858b599-layer-102");
-      this.lowPolyTrees = findLayerById(map, "19058d7d9f2-layer-87");
-      this.realisticTrees = findLayerById(map, "19058d7d2b5-layer-86");
-      this.mesh = findLayerById(map, "1904131bf90-layer-113");
-
-      this.uploadLayer.definitionExpression = `name = '${this.deviceId}'`;
-      const field = this.uploadLayer.fields.find((f) => f.name === "name")!;
-      field.defaultValue = deviceId;
-
-      this.modifications = this.mesh.modifications;
-
-      this._loading = "delete-models";
-      const query = this.uploadLayer.createQuery();
-      query.returnGeometry = false;
-      const { features } = await this.uploadLayer.queryFeatures(query);
-      if (features.length) {
-        await this.uploadLayer.applyEdits({
-          deleteFeatures: features,
-        });
-      }
-
-      this._loading = "preload-slides";
-
-      const slides = map.presentation.slides;
-      for (const slide of slides) {
-        slide.applyTo(view, { animate: false });
-        await whenOnce(() => !view.updating);
-      }
-      slides.getItemAt(0).applyTo(view, { animate: false });
-
-      this._loading = "done";
-
-      map.add(this.waterLayer);
-
-      this.addHandles(
-        watch(
-          () => this.mesh.visible,
-          (visible) => {
-            this.waterLayer.visible = visible;
-          },
-        ),
-      );
-    });
 
     window.onkeydown = (e) => {
       const key = e.key;
@@ -203,6 +130,59 @@ class AppStore extends Accessor {
         },
       },
     ]);
+
+    whenOnce(() => this.sceneStore.ready).then(() => this.performAppLoad());
+  }
+
+  private async performAppLoad() {
+    this._loading = "scene";
+
+    const view = this.sceneStore.view;
+    const map = this.sceneStore.map;
+
+    this.title = document.title = map.portalItem.title;
+
+    await map.loadAll();
+
+    this.sceneStore.uploadLayer.definitionExpression = `name = '${this.deviceId}'`;
+    const field = this.sceneStore.uploadLayer.fields.find(
+      (f) => f.name === "name",
+    )!;
+    field.defaultValue = this.deviceId;
+
+    this.modifications = this.sceneStore.mesh.modifications;
+
+    this._loading = "delete-models";
+    const query = this.sceneStore.uploadLayer.createQuery();
+    query.returnGeometry = false;
+    const { features } = await this.sceneStore.uploadLayer.queryFeatures(query);
+    if (features.length) {
+      await this.sceneStore.uploadLayer.applyEdits({
+        deleteFeatures: features,
+      });
+    }
+
+    this._loading = "preload-slides";
+
+    const slides = map.presentation.slides;
+    for (const slide of slides) {
+      slide.applyTo(view, { animate: false });
+      await whenOnce(() => !view.updating);
+    }
+    slides.getItemAt(0).applyTo(view, { animate: false });
+
+    this._loading = "done";
+
+    map.add(this.waterLayer);
+
+    this.addHandles(
+      watch(
+        () => this.sceneStore.mesh.visible,
+        (visible) => {
+          this.waterLayer.visible = visible;
+        },
+      ),
+    );
   }
 
   private async updateFootprintFilter() {
@@ -212,7 +192,7 @@ class AppStore extends Accessor {
     }
 
     const footprint = this.uploadedFootprint;
-    const layerView = await view.whenLayerView(this.downloadLayer);
+    const layerView = await view.whenLayerView(this.sceneStore.downloadLayer);
 
     if (footprint) {
       const modifications = this.modifications
@@ -226,9 +206,9 @@ class AppStore extends Accessor {
         }),
       );
 
-      this.mesh.modifications = modifications;
+      this.sceneStore.mesh.modifications = modifications;
     } else {
-      this.mesh.modifications = this.modifications;
+      this.sceneStore.mesh.modifications = this.modifications;
       layerView.filter = null as any;
     }
   }

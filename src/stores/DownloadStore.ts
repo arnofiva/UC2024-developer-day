@@ -121,7 +121,7 @@ class DownloadStore extends Accessor {
     this.tool = new ExtentTool({ vm: sketch.viewModel, highlightGeometry });
 
     whenOnce(() => this.tool.state === "placing-a").then(() => {
-      this.appStore.lowPolyTrees.visible = false;
+      this.appStore.sceneStore.lowPolyTrees.visible = false;
     });
 
     this.addHandles({
