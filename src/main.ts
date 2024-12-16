@@ -1,3 +1,4 @@
+import { whenOnce } from "@arcgis/core/core/reactiveUtils";
 import * as kernel from "@arcgis/core/kernel";
 import "@esri/calcite-components/dist/calcite/calcite.css";
 import App from "./compontents/App";
@@ -22,7 +23,11 @@ const store = new AppStore({
   skipPreload,
 });
 
-const app = new App({
+new App({
   container: "app",
   store,
+});
+
+whenOnce(() => store.sceneStore.ready).then(() => {
+  (window as any)["view"] = store.sceneStore.view;
 });

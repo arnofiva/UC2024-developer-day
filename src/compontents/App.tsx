@@ -20,7 +20,6 @@ import RealisticStore from "../stores/RealisticStore";
 import TimeStore from "../stores/TimeStore";
 import UploadStore from "../stores/UploadStore";
 import ViewshedStore from "../stores/ViewshedStore";
-import { setViewUI } from "../utils";
 
 import { ArcgisSceneCustomEvent } from "@arcgis/map-components";
 import "@arcgis/map-components/dist/components/arcgis-compass";
@@ -43,8 +42,6 @@ class App extends Widget<AppProperties> implements UIActions {
     const view = arcgisScene.view;
     this.store.sceneStore.view = view;
     view.popupEnabled = false;
-    setViewUI(view.ui);
-    (window as any)["view"] = view;
   }
 
   render() {
