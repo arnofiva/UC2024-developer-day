@@ -6,8 +6,6 @@ import {
 import { tsx } from "@arcgis/core/widgets/support/widget";
 
 import AppStore from "../stores/AppStore";
-import Flow from "./Flow";
-import Navigation from "./Navigation";
 import { Widget } from "./Widget";
 
 import { debounce } from "@arcgis/core/core/promiseUtils";
@@ -23,14 +21,16 @@ import TimeStore from "../stores/TimeStore";
 import UploadStore from "../stores/UploadStore";
 import ViewshedStore from "../stores/ViewshedStore";
 import { setViewUI } from "../utils";
-import Splash from "./Splash";
 
 import { ArcgisSceneCustomEvent } from "@arcgis/map-components";
 import "@arcgis/map-components/dist/components/arcgis-compass";
 import "@arcgis/map-components/dist/components/arcgis-navigation-toggle";
 import "@arcgis/map-components/dist/components/arcgis-scene";
 import "@arcgis/map-components/dist/components/arcgis-zoom";
+import AppMenu from "./AppMenu";
 import AppScreen from "./AppScreen";
+import NavigationBar from "./NavigationBar";
+import StartupDialog from "./StartupDialog";
 
 type AppProperties = Pick<App, "store">;
 
@@ -51,8 +51,8 @@ class App extends Widget<AppProperties> implements UIActions {
     return (
       <div>
         <calcite-shell>
-          <Splash store={this.store}></Splash>
-          <Navigation store={this.store}></Navigation>
+          <StartupDialog store={this.store}></StartupDialog>
+          <NavigationBar store={this.store}></NavigationBar>
 
           <AppScreen store={this.store}></AppScreen>
 
@@ -67,7 +67,7 @@ class App extends Widget<AppProperties> implements UIActions {
             <arcgis-compass position="top-left"></arcgis-compass>
           </arcgis-scene>
 
-          <Flow uiActions={this} store={this.store}></Flow>
+          <AppMenu uiActions={this} store={this.store}></AppMenu>
         </calcite-shell>
       </div>
     );

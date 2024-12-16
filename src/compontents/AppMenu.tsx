@@ -40,7 +40,7 @@ const TILES = [
   },
 ];
 
-const Flow = ({
+const AppMenu = ({
   uiActions,
   store,
 }: {
@@ -73,4 +73,4 @@ const Flow = ({
   );
 };
 
-export default Flow;
+export default AppMenu;

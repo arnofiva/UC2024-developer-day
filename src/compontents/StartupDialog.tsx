@@ -19,7 +19,7 @@ const Loader = ({ store }: { store: AppStore }) => {
   }
 };
 
-const Splash = ({ store }: { store: AppStore }) => {
+const StartupDialog = ({ store }: { store: AppStore }) => {
   return (
     <calcite-dialog
       slot="dialogs"
@@ -48,4 +48,4 @@ const Splash = ({ store }: { store: AppStore }) => {
   );
 };
 
-export default Splash;
+export default StartupDialog;

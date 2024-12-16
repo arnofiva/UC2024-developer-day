@@ -9,7 +9,7 @@ import "@esri/calcite-components/dist/components/calcite-navigation";
 import "@esri/calcite-components/dist/components/calcite-navigation-logo";
 import "@esri/calcite-components/dist/components/calcite-navigation-user";
 
-const Navigation = ({ store }: { store: AppStore }) => {
+const NavigationBar = ({ store }: { store: AppStore }) => {
   const portalItem = store.sceneStore.map?.portalItem;
   const itemPageUrl = portalItem?.itemPageUrl;
 
@@ -52,4 +52,4 @@ const Navigation = ({ store }: { store: AppStore }) => {
   );
 };
 
-export default Navigation;
+export default NavigationBar;
