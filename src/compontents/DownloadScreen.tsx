@@ -13,7 +13,11 @@ import DownloadStore from "../stores/DownloadStore";
 
 const DownloadScreen = ({ store }: { store: DownloadStore }) => {
   return (
-    <calcite-shell-panel slot="panel-end" display-mode="float">
+    <calcite-shell-panel
+      key="download-screen"
+      slot="panel-end"
+      display-mode="float"
+    >
       <calcite-panel heading="Export context">
         <DownloadPanel store={store}></DownloadPanel>
       </calcite-panel>

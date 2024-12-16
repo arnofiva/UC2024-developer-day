@@ -13,12 +13,6 @@ calcite-navigation-logo {
   padding-bottom: 16px;
 }
 
-.esri-ui-manual-container > .arcgis-placement__container {
-  width: 100%;
-  height: 100%;
-  // pointer-events: none;
-}
-
 .hide {
   display: none;
 }
@@ -66,16 +60,6 @@ calcite-scrim.loader {
   top: 65px;
   right: 0px;
   z-index: 1;
-}
-
-/* Download */
-.download {
-  min-width: 250px;
-}
-
-/* Upload */
-.esri-editor {
-  max-height: 500px !important;
 }
 
 /* Sticky note */

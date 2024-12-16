@@ -28,7 +28,6 @@ import Splash from "./Splash";
 import { ArcgisSceneCustomEvent } from "@arcgis/map-components";
 import "@arcgis/map-components/dist/components/arcgis-compass";
 import "@arcgis/map-components/dist/components/arcgis-navigation-toggle";
-import "@arcgis/map-components/dist/components/arcgis-placement";
 import "@arcgis/map-components/dist/components/arcgis-scene";
 import "@arcgis/map-components/dist/components/arcgis-zoom";
 import AppScreen from "./AppScreen";
@@ -56,6 +55,7 @@ class App extends Widget<AppProperties> implements UIActions {
           <Navigation store={this.store}></Navigation>
 
           <AppScreen store={this.store}></AppScreen>
+
           <arcgis-scene
             item-id={this.store.webSceneId}
             onArcgisViewReadyChange={(e: ArcgisSceneCustomEvent<void>) =>

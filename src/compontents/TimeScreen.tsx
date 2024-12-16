@@ -21,24 +21,25 @@ const STOPS = [
 const TimeScreen = ({ store }: { store: TimeStore }) => {
   return [
     <calcite-shell-panel
-      key="padding-left"
+      key="time-padding-left"
       slot="panel-start"
       width-scale="s"
       display-mode="float"
     ></calcite-shell-panel>,
     <calcite-shell-panel
-      key="padding-right"
+      key="time-padding-right"
       slot="panel-end"
       width-scale="s"
       display-mode="float"
     ></calcite-shell-panel>,
     <calcite-shell-panel
-      key="content"
+      key="time-screen"
       slot="panel-bottom"
       layout="horizontal"
       display-mode="float"
     >
       <arcgis-time-slider
+        view={store.view}
         fullTimeExtent={{
           start: STOPS[0],
           end: STOPS[STOPS.length - 1],

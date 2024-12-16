@@ -7,7 +7,7 @@ import { ScreenType } from "../interfaces";
 import { ensureViewUIContainer } from "../utils";
 import DownloadScreen from "./DownloadScreen";
 import TimeScreen from "./TimeScreen";
-import Upload from "./Upload";
+import UploadScreen from "./UploadScreen";
 import Viewshed from "./Viewshed";
 
 function renderScreen(store: AppStore) {
@@ -18,7 +18,7 @@ function renderScreen(store: AppStore) {
     case ScreenType.Download:
       return <DownloadScreen store={screenStore}></DownloadScreen>;
     case ScreenType.Upload:
-      return <Upload store={screenStore}></Upload>;
+      return <UploadScreen store={screenStore}></UploadScreen>;
     case ScreenType.Viewshed:
       return (
         <Viewshed

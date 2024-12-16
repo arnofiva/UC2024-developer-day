@@ -27,9 +27,6 @@ class UploadStore extends Accessor {
   @property({ constructOnly: true })
   appStore: AppStore;
 
-  @property()
-  editor: Editor;
-
   @property({ readOnly: true })
   siteLayer = new GraphicsLayer({
     title: "Site",
@@ -43,46 +40,7 @@ class UploadStore extends Accessor {
 
     whenOnce(() => this.appStore).then(() => this.initializeStore());
 
-    const layer = props.appStore.downloadLayer;
-
     const view = props.appStore.sceneStore.view!;
-
-    this.editor = new Editor({
-      view,
-      layerInfos: [
-        {
-          layer,
-          enabled: false,
-        },
-        {
-          layer: props.appStore.uploadLayer,
-          formTemplate: new FormTemplate({
-            elements: [
-              {
-                type: "field",
-                fieldName: "name",
-                visibilityExpression: "false",
-              },
-            ],
-          }),
-        },
-      ],
-      tooltipOptions: {
-        enabled: true,
-      },
-      snappingOptions: {
-        enabled: true,
-        featureSources: [{ enabled: true, layer: this.siteLayer }],
-      },
-    });
-
-    this.addHandles(
-      this.editor.on("sketch-create", (e) => {
-        if (e.detail.state === "complete") {
-          e.detail.graphic.setAttribute("name", this.appStore.deviceId);
-        }
-      }),
-    );
 
     const map = view.map;
     map.add(this.siteLayer);
@@ -112,6 +70,57 @@ class UploadStore extends Accessor {
     this.addHandles({
       remove: () => map.remove(this.siteLayer),
     });
+  }
+
+  initializeEditor(parent: HTMLElement) {
+    const view = this.appStore.sceneStore.view!;
+
+    const container = document.createElement("div");
+    const editor = new Editor({
+      view,
+      container,
+      layerInfos: [
+        {
+          layer: this.appStore.downloadLayer,
+          enabled: false,
+        },
+        {
+          layer: this.appStore.uploadLayer,
+          formTemplate: new FormTemplate({
+            elements: [
+              {
+                type: "field",
+                fieldName: "name",
+                visibilityExpression: "false",
+              },
+            ],
+          }),
+        },
+      ],
+      tooltipOptions: {
+        enabled: true,
+      },
+      snappingOptions: {
+        enabled: true,
+        featureSources: [{ enabled: true, layer: this.siteLayer }],
+      },
+    });
+
+    parent.appendChild(container);
+
+    this.addHandles([
+      editor.on("sketch-create", (e) => {
+        if (e.detail.state === "complete") {
+          e.detail.graphic.setAttribute("name", this.appStore.deviceId);
+        }
+      }),
+      {
+        remove: () => {
+          parent.removeChild(container);
+          editor.destroy();
+        },
+      },
+    ]);
   }
 
   private async initializeStore() {
