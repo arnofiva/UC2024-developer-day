@@ -20,7 +20,7 @@ import UploadStore from "./UploadStore";
 import UserStore from "./UserStore";
 import ViewshedStore from "./ViewshedStore";
 
-type AppStoreProperties = Pick<AppStore, "webSceneId">;
+type AppStoreProperties = Pick<AppStore, "webSceneId" | "skipPreload">;
 
 export type ScreenStoreUnion =
   | TimeStore
@@ -36,6 +36,9 @@ class AppStore extends Accessor {
 
   @property({ constructOnly: true })
   sceneStore = new SceneStore();
+
+  @property()
+  skipPreload = false;
 
   @property()
   title: string;
@@ -131,12 +134,23 @@ class AppStore extends Accessor {
       },
     ]);
 
-    whenOnce(() => this.sceneStore.ready).then(() => this.performAppLoad());
+    whenOnce(() => this.sceneStore.ready).then(async () => {
+      await this.performAppLoad();
+
+      this.sceneStore.map.add(this.waterLayer);
+
+      this.addHandles(
+        watch(
+          () => this.sceneStore.mesh.visible,
+          (visible) => {
+            this.waterLayer.visible = visible;
+          },
+        ),
+      );
+    });
   }
 
   private async performAppLoad() {
-    this._loading = "scene";
-
     const view = this.sceneStore.view;
     const map = this.sceneStore.map;
 
@@ -162,27 +176,18 @@ class AppStore extends Accessor {
       });
     }
 
-    this._loading = "preload-slides";
+    if (!this.skipPreload) {
+      this._loading = "preload-slides";
 
-    const slides = map.presentation.slides;
-    for (const slide of slides) {
-      slide.applyTo(view, { animate: false });
-      await whenOnce(() => !view.updating);
+      const slides = map.presentation.slides;
+      for (const slide of slides) {
+        slide.applyTo(view, { animate: false });
+        await whenOnce(() => !view.updating);
+      }
+      slides.getItemAt(0).applyTo(view, { animate: false });
     }
-    slides.getItemAt(0).applyTo(view, { animate: false });
 
     this._loading = "done";
-
-    map.add(this.waterLayer);
-
-    this.addHandles(
-      watch(
-        () => this.sceneStore.mesh.visible,
-        (visible) => {
-          this.waterLayer.visible = visible;
-        },
-      ),
-    );
   }
 
   private async updateFootprintFilter() {

@@ -15,8 +15,11 @@ const params = new URLSearchParams(document.location.search.slice(1));
 
 const webSceneId = params.get("webscene") || "c1e17338b7324a478f65d3507f05b3dd";
 
+const skipPreload = params.has("skipPreload");
+
 const store = new AppStore({
   webSceneId,
+  skipPreload,
 });
 
 const app = new App({
