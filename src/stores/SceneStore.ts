@@ -6,7 +6,7 @@ import {
 import { whenOnce } from "@arcgis/core/core/reactiveUtils";
 import IntegratedMeshLayer from "@arcgis/core/layers/IntegratedMeshLayer";
 import SceneLayer from "@arcgis/core/layers/SceneLayer";
-import Map from "@arcgis/core/Map";
+import SceneLayerView from "@arcgis/core/views/layers/SceneLayerView";
 import SceneView from "@arcgis/core/views/SceneView";
 import WebScene from "@arcgis/core/WebScene";
 import { findLayerById } from "../utils";
@@ -48,6 +48,12 @@ class SceneStore extends Accessor {
   mesh: IntegratedMeshLayer;
 
   @property()
+  buildingsLayer: SceneLayer;
+
+  @property()
+  buildingsLayerView: SceneLayerView;
+
+  @property()
   private _view: SceneView | null;
 
   @property()
@@ -58,17 +64,22 @@ class SceneStore extends Accessor {
 
     whenOnce(() => this._view).then(async (view) => {
       await view.when();
-      this.findLayers(view.map);
+      await this.findLayers(view);
       this._ready = true;
     });
   }
 
-  private findLayers(map: Map) {
+  private async findLayers(view: SceneView) {
+    const map = view.map;
+
     this.downloadLayer = findLayerById(map, "190697a6c61-layer-314");
     this.uploadLayer = findLayerById(map, "1908858b599-layer-102");
     this.lowPolyTrees = findLayerById(map, "19058d7d9f2-layer-87");
     this.realisticTrees = findLayerById(map, "19058d7d2b5-layer-86");
     this.mesh = findLayerById(map, "1904131bf90-layer-113");
+    this.buildingsLayer = findLayerById(map, "190697a6c61-layer-314");
+
+    this.buildingsLayerView = await view.whenLayerView(this.buildingsLayer);
   }
 }
 

@@ -17,17 +17,13 @@ import GraphicsLayer from "@arcgis/core/layers/GraphicsLayer";
 import FeatureFilter from "@arcgis/core/layers/support/FeatureFilter";
 import { FillSymbol3DLayer, PolygonSymbol3D } from "@arcgis/core/symbols";
 import StylePattern3D from "@arcgis/core/symbols/patterns/StylePattern3D";
-import SceneLayerView from "@arcgis/core/views/layers/SceneLayerView";
 import Sketch from "@arcgis/core/widgets/Sketch";
 import SketchViewModel from "@arcgis/core/widgets/Sketch/SketchViewModel";
 import { ScreenType } from "../interfaces";
 import { applySlide, ignoreAbortErrors } from "../utils";
 import AppStore from "./AppStore";
 
-type DownloadStoreProperties = Pick<
-  DownloadStore,
-  "appStore" | "buildingsLayerView"
->;
+type DownloadStoreProperties = Pick<DownloadStore, "appStore">;
 
 const THE_POINT = new Point({
   spatialReference: SpatialReference.WebMercator,
@@ -45,8 +41,8 @@ class DownloadStore extends Accessor {
   @property({ constructOnly: true })
   appStore: AppStore;
 
-  @property({ constructOnly: true })
-  buildingsLayerView: SceneLayerView;
+  // @property({ constructOnly: true })
+  // buildingsLayerView: SceneLayerView;
 
   @property()
   tool: ExtentTool;
@@ -149,7 +145,7 @@ class DownloadStore extends Accessor {
       return;
     }
 
-    const layerView = this.buildingsLayerView;
+    const layerView = this.appStore.sceneStore.buildingsLayerView;
     const query = layerView.createQuery();
     query.geometry = geometry;
     query.spatialRelationship = "intersects";
@@ -171,7 +167,8 @@ class DownloadStore extends Accessor {
       return;
     }
 
-    this.buildingsLayerView.filter = new FeatureFilter({
+    const layerView = this.appStore.sceneStore.buildingsLayerView;
+    layerView.filter = new FeatureFilter({
       geometry,
       spatialRelationship: "intersects",
     });

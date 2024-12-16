@@ -4,7 +4,7 @@ import "@esri/calcite-components/dist/components/calcite-shell-panel";
 import "@esri/calcite-components/dist/components/calcite-tile";
 import "@esri/calcite-components/dist/components/calcite-tile-group";
 
-import { ScreenType, UIActions } from "../interfaces";
+import { ScreenType } from "../interfaces";
 import AppStore from "../stores/AppStore";
 
 const TILES = [
@@ -40,13 +40,7 @@ const TILES = [
   },
 ];
 
-const AppMenu = ({
-  uiActions,
-  store,
-}: {
-  uiActions: UIActions;
-  store: AppStore;
-}) => {
+const AppMenu = ({ store }: { store: AppStore }) => {
   return (
     <calcite-shell-panel
       id="bottomPanel"
@@ -64,7 +58,7 @@ const AppMenu = ({
             heading={tile.heading}
             description={tile.description}
             onCalciteTileSelect={() => {
-              uiActions.selectScreen(tile.screenType);
+              store.selectScreen(tile.screenType);
             }}
           ></calcite-tile>
         ))}

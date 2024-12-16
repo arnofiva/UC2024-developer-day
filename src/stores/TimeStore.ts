@@ -8,7 +8,7 @@ import SceneView from "@arcgis/core/views/SceneView";
 import { ScreenType } from "../interfaces";
 import { applySlide } from "../utils";
 
-type TimeStoreProperties = Pick<TimeStore, "view" | "timeSliderConfig">;
+type TimeStoreProperties = Pick<TimeStore, "view">;
 
 @subclass()
 class TimeStore extends Accessor {
@@ -16,9 +16,6 @@ class TimeStore extends Accessor {
 
   @property({ constructOnly: true })
   view: SceneView;
-
-  @property({ constructOnly: true })
-  timeSliderConfig: any;
 
   constructor(props: TimeStoreProperties) {
     super(props);

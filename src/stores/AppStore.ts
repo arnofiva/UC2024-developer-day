@@ -10,6 +10,7 @@ import GraphicsLayer from "@arcgis/core/layers/GraphicsLayer";
 import SceneModification from "@arcgis/core/layers/support/SceneModification";
 import SceneModifications from "@arcgis/core/layers/support/SceneModifications";
 import { waterGraphic } from "../constants";
+import { ScreenType } from "../interfaces";
 import { createToggle } from "../snippet";
 import { applySlide } from "../utils";
 import DownloadStore from "./DownloadStore";
@@ -145,6 +146,7 @@ class AppStore extends Accessor {
           (visible) => {
             this.waterLayer.visible = visible;
           },
+          { initial: true },
         ),
       );
     });
@@ -216,6 +218,39 @@ class AppStore extends Accessor {
       this.sceneStore.mesh.modifications = this.modifications;
       layerView.filter = null as any;
     }
+  }
+
+  private createScreen(screen: ScreenType) {
+    const view = this.sceneStore.view;
+    const map = this.sceneStore.map;
+
+    if (!view || !map) {
+      throw new Error();
+    }
+
+    switch (screen) {
+      case ScreenType.Time:
+        return new TimeStore({ view });
+      case ScreenType.Download:
+        return new DownloadStore({ appStore: this });
+      case ScreenType.Upload:
+        return new UploadStore({ appStore: this });
+      case ScreenType.Realistic:
+        return new RealisticStore({ view });
+      case ScreenType.Viewshed:
+        return new ViewshedStore({ view });
+      default:
+        throw new Error();
+    }
+  }
+
+  selectScreen(screenType: ScreenType) {
+    if (this.currentScreenStore?.type === screenType) {
+      return;
+    }
+
+    const screen = this.createScreen(screenType);
+    this.currentScreenStore = screen;
   }
 }
 

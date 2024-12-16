@@ -5,7 +5,3 @@ export enum ScreenType {
   Realistic,
   Viewshed,
 }
-
-export interface UIActions {
-  selectScreen(screen: ScreenType): Promise<void>;
-}
