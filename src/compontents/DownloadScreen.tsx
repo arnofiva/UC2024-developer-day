@@ -18,7 +18,7 @@ const DownloadScreen = ({ store }: { store: DownloadStore }) => {
       slot="panel-end"
       display-mode="float"
     >
-      <calcite-panel heading="Export context">
+      <calcite-panel heading="Download 3D content">
         <DownloadPanel store={store}></DownloadPanel>
       </calcite-panel>
     </calcite-shell-panel>
@@ -55,7 +55,7 @@ const DownloadPanel = ({ store }: { store: DownloadStore }) => {
           onclick={() => store.start()}
           width="full"
         >
-          Select download extent
+          Select extent
         </calcite-button>
       );
     }

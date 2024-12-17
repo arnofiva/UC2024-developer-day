@@ -2,6 +2,7 @@ import { tsx } from "@arcgis/core/widgets/support/widget";
 
 import "@esri/calcite-components/dist/components/calcite-button";
 import "@esri/calcite-components/dist/components/calcite-dialog";
+import "@esri/calcite-components/dist/components/calcite-notice";
 import AppStore from "../stores/AppStore";
 
 const Loader = ({ store }: { store: AppStore }) => {
@@ -27,23 +28,24 @@ const StartupDialog = ({ store }: { store: AppStore }) => {
       modal
       escapeDisabled
       outsideCloseDisabled
+      closeDisabled={!store.title}
       heading={store.title}
     >
-      <calcite-notice open icon width="full">
-        <div slot="message">
-          You can edit this choice later on, in Settings.
-        </div>
-      </calcite-notice>
+      {store.loading === "done" ? (
+        <calcite-notice open icon width="full">
+          <div slot="message">App is ready to use!</div>
+        </calcite-notice>
+      ) : (
+        <Loader store={store}></Loader>
+      )}
 
-      <Loader store={store}></Loader>
-
-      <calcite-button slot="footer-start" kind="neutral">
+      {/* <calcite-button slot="footer-start" kind="neutral">
         Back
       </calcite-button>
       <calcite-button slot="footer-end" appearance="outline">
         Cancel
-      </calcite-button>
-      <calcite-button slot="footer-end">Save</calcite-button>
+      </calcite-button> */}
+      <calcite-button slot="footer-end">Start</calcite-button>
     </calcite-dialog>
   );
 };
