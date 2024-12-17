@@ -53,7 +53,7 @@ class DownloadStore extends Accessor {
   constructor(props: DownloadStoreProperties) {
     super(props);
 
-    const view = props.appStore.sceneStore.view!;
+    const view = props.appStore.sceneStore.view;
 
     applySlide(view, 2);
 

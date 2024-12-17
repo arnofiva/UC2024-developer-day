@@ -40,7 +40,7 @@ class UploadStore extends Accessor {
 
     whenOnce(() => this.appStore).then(() => this.initializeStore());
 
-    const view = props.appStore.sceneStore.view!;
+    const view = props.appStore.sceneStore.view;
 
     const map = view.map;
     map.add(this.siteLayer);
@@ -73,7 +73,7 @@ class UploadStore extends Accessor {
   }
 
   initializeEditor(parent: HTMLElement) {
-    const view = this.appStore.sceneStore.view!;
+    const view = this.appStore.sceneStore.view;
 
     const container = document.createElement("div");
     const editor = new Editor({
@@ -124,7 +124,7 @@ class UploadStore extends Accessor {
   }
 
   private async initializeStore() {
-    const view = this.appStore.sceneStore.view!;
+    const view = this.appStore.sceneStore.view;
     applySlide(view, 2);
 
     this.addHandles(

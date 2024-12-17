@@ -10,21 +10,20 @@ import "@esri/calcite-components/dist/components/calcite-navigation-logo";
 import "@esri/calcite-components/dist/components/calcite-navigation-user";
 
 const NavigationBar = ({ store }: { store: AppStore }) => {
-  const portalItem = store.sceneStore.map?.portalItem;
-  const itemPageUrl = portalItem?.itemPageUrl;
+  const userStore = store.userStore;
 
-  const userStore = store?.userStore;
-
-  const user = (userStore?.authenticated && userStore?.user) || null;
+  const user = (userStore.authenticated && userStore.user) || null;
 
   return (
     <calcite-navigation slot="header">
       <calcite-navigation-logo
         slot="logo"
-        heading={portalItem?.title}
+        heading={store.title}
         description="ArcGIS Maps SDK for JavaScript"
         thumbnail="./icon-64.svg"
         onclick={() => {
+          const portalItem = store.sceneStore.map.portalItem;
+          const itemPageUrl = portalItem.itemPageUrl;
           if (itemPageUrl) {
             window.open(itemPageUrl, "new");
           }
