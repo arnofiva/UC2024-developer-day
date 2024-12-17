@@ -17,6 +17,16 @@ calcite-navigation-logo {
   display: none;
 }
 
+/* Startup Dialog */
+
+calcite-label[slot="footer-end"] {
+  --calcite-label-margin-bottom: 0;
+}
+
+.startup-dialog-content {
+  max-height: 250px;
+}
+
 /* Shell */
 
 calcite-tile-group {

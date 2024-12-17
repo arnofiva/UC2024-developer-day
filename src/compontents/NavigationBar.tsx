@@ -3,6 +3,7 @@ import { tsx } from "@arcgis/core/widgets/support/widget";
 import AppStore from "../stores/AppStore";
 
 import "@esri/calcite-components/dist/components/calcite-button";
+import "@esri/calcite-components/dist/components/calcite-chip";
 import "@esri/calcite-components/dist/components/calcite-menu";
 import "@esri/calcite-components/dist/components/calcite-menu-item";
 import "@esri/calcite-components/dist/components/calcite-navigation";
@@ -29,6 +30,12 @@ const NavigationBar = ({ store }: { store: AppStore }) => {
           }
         }}
       ></calcite-navigation-logo>
+      <calcite-menu slot="content-start">
+        <calcite-menu-item
+          iconStart="information"
+          onclick={() => (store.isStartupDialogShown = true)}
+        ></calcite-menu-item>
+      </calcite-menu>
 
       {user ? (
         <calcite-navigation-user

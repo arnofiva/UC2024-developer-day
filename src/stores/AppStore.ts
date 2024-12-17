@@ -39,6 +39,17 @@ class AppStore extends Accessor {
   sceneStore = new SceneStore();
 
   @property()
+  get skipStartupDialog() {
+    return localStorage.getItem("skipStartupDialog") === "true";
+  }
+  set skipStartupDialog(skip: boolean) {
+    localStorage.setItem("skipStartupDialog", `${skip}`);
+  }
+
+  @property()
+  isStartupDialogShown = true;
+
+  @property()
   skipPreload = false;
 
   @property()
@@ -149,6 +160,10 @@ class AppStore extends Accessor {
           { initial: true },
         ),
       );
+
+      if (this.skipStartupDialog) {
+        this.isStartupDialogShown = false;
+      }
     });
   }
 

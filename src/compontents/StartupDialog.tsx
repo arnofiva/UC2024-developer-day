@@ -1,8 +1,10 @@
 import { tsx } from "@arcgis/core/widgets/support/widget";
 
+import WebScene from "@arcgis/core/WebScene";
 import "@esri/calcite-components/dist/components/calcite-button";
+import "@esri/calcite-components/dist/components/calcite-checkbox";
 import "@esri/calcite-components/dist/components/calcite-dialog";
-import "@esri/calcite-components/dist/components/calcite-notice";
+import "@esri/calcite-components/dist/components/calcite-label";
 import AppStore from "../stores/AppStore";
 
 const Loader = ({ store }: { store: AppStore }) => {
@@ -20,32 +22,59 @@ const Loader = ({ store }: { store: AppStore }) => {
   }
 };
 
+const Description = ({ webScene }: { webScene: WebScene }) => {
+  const bind = (div: HTMLDivElement) => {
+    div.innerHTML = webScene.portalItem.description;
+  };
+
+  return <div afterCreate={bind}></div>;
+};
+
 const StartupDialog = ({ store }: { store: AppStore }) => {
+  const loading = store.loading !== "done";
+
   return (
     <calcite-dialog
       slot="dialogs"
-      open
+      open={store.isStartupDialogShown}
       modal
       escapeDisabled
       outsideCloseDisabled
-      closeDisabled={!store.title}
-      heading={store.title}
+      closeDisabled={loading}
+      heading={loading ? null : store.title}
+      onCalciteDialogClose={() => (store.isStartupDialogShown = false)}
     >
-      {store.loading === "done" ? (
-        <calcite-notice open icon width="full">
-          <div slot="message">App is ready to use!</div>
-        </calcite-notice>
-      ) : (
-        <Loader store={store}></Loader>
-      )}
+      <div class="startup-dialog-content">
+        {loading ? (
+          <Loader store={store}></Loader>
+        ) : (
+          <Description webScene={store.sceneStore.map}></Description>
+        )}
+      </div>
 
-      {/* <calcite-button slot="footer-start" kind="neutral">
-        Back
-      </calcite-button>
-      <calcite-button slot="footer-end" appearance="outline">
-        Cancel
-      </calcite-button> */}
-      <calcite-button slot="footer-end">Start</calcite-button>
+      {loading
+        ? []
+        : [
+            <calcite-label slot="footer-end" layout="inline-space-between">
+              <calcite-checkbox
+                checked={store.skipStartupDialog}
+                disabled={loading}
+                onCalciteCheckboxChange={() => {
+                  store.skipStartupDialog = !store.skipStartupDialog;
+                }}
+              ></calcite-checkbox>
+              Hide on startup
+            </calcite-label>,
+            <calcite-button
+              disabled={loading}
+              slot="footer-end"
+              onclick={() => {
+                store.isStartupDialogShown = false;
+              }}
+            >
+              Close
+            </calcite-button>,
+          ]}
     </calcite-dialog>
   );
 };
