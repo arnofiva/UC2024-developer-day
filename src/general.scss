@@ -9,7 +9,6 @@ calcite-navigation-logo {
 }
 
 #screen {
-  background-color: unset;
   padding-bottom: 16px;
 }
 
@@ -17,7 +16,7 @@ calcite-navigation-logo {
   display: none;
 }
 
-/* Startup Dialog */
+/* Startup dialog */
 
 calcite-label[slot="footer-end"] {
   --calcite-label-margin-bottom: 0;
@@ -25,29 +24,6 @@ calcite-label[slot="footer-end"] {
 
 .startup-dialog-content {
   max-height: 250px;
-}
-
-/* Shell */
-
-calcite-tile-group {
-  width: var(--my-width);
-}
-
-#my-custom-group {
-  display: flex;
-  justify-content: center;
-}
-
-calcite-tile {
-  flex: 1;
-}
-
-calcite-scrim.loader {
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 100%;
 }
 
 /* Time slider */
@@ -63,13 +39,6 @@ calcite-scrim.loader {
 
 .year-labels {
   margin-top: 5px !important;
-}
-
-#user-menu {
-  position: absolute;
-  top: 65px;
-  right: 0px;
-  z-index: 1;
 }
 
 /* Sticky note */
