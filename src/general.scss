@@ -24,6 +24,10 @@ calcite-label[slot="footer-end"] {
 
 .startup-dialog-content {
   max-height: 250px;
+  img,
+  video {
+    max-width: 100%;
+  }
 }
 
 /* Time slider */
