@@ -9,7 +9,7 @@ import Polygon from "@arcgis/core/geometry/Polygon";
 import GraphicsLayer from "@arcgis/core/layers/GraphicsLayer";
 import SceneModification from "@arcgis/core/layers/support/SceneModification";
 import SceneModifications from "@arcgis/core/layers/support/SceneModifications";
-import { waterGraphic } from "../constants";
+import { originGraphic, waterGraphic } from "../constants";
 import { ScreenType } from "../interfaces";
 import { createToggle } from "../snippet";
 import { applySlide } from "../utils";
@@ -81,6 +81,12 @@ class AppStore extends Accessor {
     graphics: [waterGraphic],
   });
 
+  @property({ readOnly: true })
+  originLayer = new GraphicsLayer({
+    graphics: [originGraphic],
+    visible: false,
+  });
+
   private modifications: SceneModifications;
 
   @property()
@@ -150,6 +156,7 @@ class AppStore extends Accessor {
       await this.performAppLoad();
 
       this.sceneStore.map.add(this.waterLayer);
+      this.sceneStore.map.add(this.originLayer);
 
       this.addHandles(
         watch(

@@ -1,4 +1,35 @@
 import Graphic from "@arcgis/core/Graphic";
+import { SpatialReference } from "@arcgis/core/geometry";
+import Point from "@arcgis/core/geometry/Point";
+import ObjectSymbol3DLayer from "@arcgis/core/symbols/ObjectSymbol3DLayer";
+import PointSymbol3D from "@arcgis/core/symbols/PointSymbol3D";
+
+export const origin = new Point({
+  spatialReference: SpatialReference.WGS84,
+  longitude: 8.52424,
+  latitude: 47.365341,
+  z: 419.37,
+});
+
+export const originGraphic = new Graphic({
+  geometry: origin,
+  symbol: new PointSymbol3D({
+    symbolLayers: [
+      new ObjectSymbol3DLayer({
+        anchor: "bottom",
+        height: 20,
+        width: 5,
+        depth: 5,
+        material: {
+          color: "red",
+        },
+        resource: {
+          primitive: "inverted-cone",
+        },
+      }),
+    ],
+  }),
+});
 
 export const waterGraphic = Graphic.fromJSON({
   symbol: {

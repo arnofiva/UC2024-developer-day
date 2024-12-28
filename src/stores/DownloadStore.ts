@@ -5,14 +5,8 @@ import {
   subclass,
 } from "@arcgis/core/core/accessorSupport/decorators";
 import { debounce } from "@arcgis/core/core/promiseUtils";
-import { watch, when, whenOnce } from "@arcgis/core/core/reactiveUtils";
-import {
-  Extent,
-  Geometry,
-  Point,
-  Polygon,
-  SpatialReference,
-} from "@arcgis/core/geometry";
+import { watch, when } from "@arcgis/core/core/reactiveUtils";
+import { Extent, Geometry, Point, Polygon } from "@arcgis/core/geometry";
 import GraphicsLayer from "@arcgis/core/layers/GraphicsLayer";
 import FeatureFilter from "@arcgis/core/layers/support/FeatureFilter";
 import { FillSymbol3DLayer, PolygonSymbol3D } from "@arcgis/core/symbols";
@@ -24,15 +18,6 @@ import { applySlide, ignoreAbortErrors } from "../utils";
 import AppStore from "./AppStore";
 
 type DownloadStoreProperties = Pick<DownloadStore, "appStore">;
-
-const THE_POINT = new Point({
-  spatialReference: SpatialReference.WebMercator,
-  // longitude: 8.525363607720573,
-  longitude: 8.52535751,
-  // latitude: 47.36629893125558,
-  latitude: 47.36630636,
-  z: 417.43148594,
-});
 
 @subclass()
 class DownloadStore extends Accessor {
@@ -80,6 +65,7 @@ class DownloadStore extends Accessor {
         enableScaling: false,
         enableZ: false,
         reshapeOptions: {
+          shapeOperation: "none",
           edgeOperation: "offset",
           vertexOperation: "move-xy",
         },
@@ -91,8 +77,6 @@ class DownloadStore extends Accessor {
     });
 
     const highlightGeometry = (getGeometry: () => Geometry) => {
-      let highlights: IHandle | null = null;
-
       const highlightHandle = watch(
         getGeometry,
         (geometry) => {
@@ -114,11 +98,20 @@ class DownloadStore extends Accessor {
       };
     };
 
-    this.tool = new ExtentTool({ vm: sketch.viewModel, highlightGeometry });
-
-    whenOnce(() => this.tool.state === "placing-a").then(() => {
-      this.appStore.sceneStore.lowPolyTrees.visible = false;
+    this.tool = new ExtentTool({
+      sketchVM: sketch.viewModel,
+      highlightGeometry,
     });
+
+    this.addHandles(
+      when(
+        () => this.tool.state === "placing-a",
+        () => {
+          this.appStore.sceneStore.lowPolyTrees.visible = false;
+          this.appStore.originLayer.visible = true;
+        },
+      ),
+    );
 
     this.addHandles({
       remove: () => {
@@ -341,7 +334,7 @@ class ExtentShape extends Accessor {
 @subclass()
 class ExtentTool extends Accessor {
   @property({ constructOnly: true })
-  vm: SketchViewModel;
+  sketchVM: SketchViewModel;
 
   @property({ constructOnly: true })
   private highlightGeometry: (getGeometry: () => Geometry | null) => IHandle;
@@ -360,7 +353,7 @@ class ExtentTool extends Accessor {
     const { controlPointA, controlPointB } = this;
     const a = controlPointA?.geometry as Point | null;
     const b = (controlPointB?.geometry ??
-      this.vm.createGraphic?.geometry) as Point | null;
+      this.sketchVM.createGraphic?.geometry) as Point | null;
 
     if (a == null || b == null) {
       return null;
@@ -381,7 +374,7 @@ class ExtentTool extends Accessor {
   }
 
   @property()
-  wipExtent = this.#createWipExtentGraphic();
+  wipExtent = this.createWipExtentGraphic();
 
   initialize() {
     const highlightHandle = this.highlightGeometry(() => this.polygon);
@@ -395,8 +388,8 @@ class ExtentTool extends Accessor {
             this.controlPointA = null;
             this.controlPointB = null;
             (this.wipExtent.layer as GraphicsLayer).remove(this.wipExtent);
-            this.wipExtent = this.#createWipExtentGraphic();
-            this.#vmCreateHandle?.remove();
+            this.wipExtent = this.createWipExtentGraphic();
+            this.sketchVMCreateHandle?.remove();
           }
         },
       ),
@@ -405,8 +398,8 @@ class ExtentTool extends Accessor {
         (polygon) => {
           if (polygon) {
             this.wipExtent.geometry = polygon.extent;
-            if (!this.vm.layer.graphics.includes(this.wipExtent)) {
-              this.vm.layer.add(this.wipExtent);
+            if (!this.sketchVM.layer.graphics.includes(this.wipExtent)) {
+              this.sketchVM.layer.add(this.wipExtent);
             }
           }
         },
@@ -419,7 +412,7 @@ class ExtentTool extends Accessor {
               () => this.controlPointA,
               (next, old) => {
                 if (next == null && old) {
-                  this.vm.layer.remove(old);
+                  this.sketchVM.layer.remove(old);
                 }
               },
             ),
@@ -434,7 +427,7 @@ class ExtentTool extends Accessor {
               () => this.controlPointB,
               (next, old) => {
                 if (next == null && old) {
-                  this.vm.layer.remove(old);
+                  this.sketchVM.layer.remove(old);
                 }
               },
             ),
@@ -444,34 +437,34 @@ class ExtentTool extends Accessor {
     ]);
   }
 
-  #vmCreateHandle: IHandle | null = null;
+  sketchVMCreateHandle: IHandle | null = null;
 
   onCancel() {
     this.state = "idle";
   }
 
   onComplete(graphic: Graphic) {
-    this.vm.layer.remove(graphic);
+    this.sketchVM.layer.remove(graphic);
     const extent = new ExtentShape(
       graphic.geometry as Extent,
       this.highlightGeometry,
     );
 
-    const deletionHandle = this.vm.on("delete", (event) => {
+    const deletionHandle = this.sketchVM.on("delete", (event) => {
       event.graphics.includes(extent.graphic);
       extent.destroy();
     });
     extent.addHandles(deletionHandle);
-    this.vm.layer.add(extent.graphic);
-    this.vm.update(extent.graphic);
+    this.sketchVM.layer.add(extent.graphic);
+    this.sketchVM.update(extent.graphic);
     this.state = "idle";
   }
 
   start() {
     this.state = "placing-a";
-    this.vm.create("point");
+    this.sketchVM.create("point");
 
-    this.#vmCreateHandle = this.vm.on("create", (event) => {
+    this.sketchVMCreateHandle = this.sketchVM.on("create", (event) => {
       if (event.state === "cancel") {
         this.onCancel();
         return;
@@ -481,12 +474,8 @@ class ExtentTool extends Accessor {
         const graphic = event.graphic;
 
         if (this.state === "placing-a") {
-          (graphic.geometry as Point).x = THE_POINT.x;
-          (graphic.geometry as Point).y = THE_POINT.y;
-          (graphic.geometry as Point).z = THE_POINT.z;
-          // graphic.geometry = THE_POINT;
           this.controlPointA = graphic;
-          this.vm.create("point");
+          this.sketchVM.create("point");
           this.state = "placing-b";
           return;
         }
@@ -500,7 +489,7 @@ class ExtentTool extends Accessor {
     });
   }
 
-  #createWipExtentGraphic() {
+  private createWipExtentGraphic() {
     return new Graphic({
       symbol: new PolygonSymbol3D({
         symbolLayers: [
