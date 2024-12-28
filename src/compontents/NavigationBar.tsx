@@ -30,12 +30,14 @@ const NavigationBar = ({ store }: { store: AppStore }) => {
           }
         }}
       ></calcite-navigation-logo>
-      <calcite-menu key="startup-dialog-menu" slot="content-start">
-        <calcite-menu-item
-          iconStart="information"
-          onclick={() => (store.isStartupDialogShown = true)}
-        ></calcite-menu-item>
-      </calcite-menu>
+
+      <calcite-button
+        appearance="transparent"
+        kind="neutral"
+        icon-start="information"
+        slot="content-start"
+        onclick={() => (store.isStartupDialogShown = true)}
+      ></calcite-button>
 
       {user ? (
         <calcite-navigation-user
