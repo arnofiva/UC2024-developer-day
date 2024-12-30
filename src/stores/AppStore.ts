@@ -12,7 +12,6 @@ import SceneModifications from "@arcgis/core/layers/support/SceneModifications";
 import { originGraphic, waterGraphic } from "../constants";
 import { ScreenType } from "../interfaces";
 import { createToggle } from "../snippet";
-import { applySlide } from "../utils";
 import DownloadStore from "./DownloadStore";
 import RealisticStore from "./RealisticStore";
 import SceneStore from "./SceneStore";
@@ -123,20 +122,10 @@ class AppStore extends Accessor {
       }
 
       const index = Number.parseInt(key);
-      if (Number.isInteger(index)) {
-        applySlide(view, index - 1);
-      } else if (key === "c") {
+      if (key === "q") {
         snippetToggle();
-      } else if (key === "v") {
+      } else if (key === "w") {
         snippetFlattenToggle();
-      } else if (key === " ") {
-        if (stickyNoteShown) {
-          stickyNote?.classList.add("hide");
-        } else {
-          stickyNote?.classList.remove("hide");
-        }
-        stickyNoteShown = !stickyNoteShown;
-        e.stopImmediatePropagation();
       }
     };
 
@@ -172,6 +161,14 @@ class AppStore extends Accessor {
         this.isStartupDialogShown = false;
       }
     });
+  }
+
+  showStickyNote() {
+    stickyNote.classList.remove("hide");
+  }
+
+  hideStickyNote() {
+    stickyNote.classList.add("hide");
   }
 
   private async performAppLoad() {
@@ -279,7 +276,6 @@ class AppStore extends Accessor {
 const snippetToggle = createToggle("downloadCodeSnippet");
 const snippetFlattenToggle = createToggle("flattenCodeSnippet");
 
-const stickyNote = document.getElementById("stickyNote");
-let stickyNoteShown = false;
+const stickyNote = document.getElementById("stickyNote")!;
 
 export default AppStore;

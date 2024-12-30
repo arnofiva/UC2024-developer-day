@@ -129,6 +129,7 @@ class UploadStore extends Accessor {
           this.appStore.sceneStore.lowPolyTrees.visible = true;
           this.appStore.originLayer.visible = false;
           this.siteLayer.visible = false;
+          this.appStore.hideStickyNote();
         },
       ),
     ]);

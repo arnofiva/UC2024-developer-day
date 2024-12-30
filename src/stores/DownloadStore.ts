@@ -74,7 +74,8 @@ class DownloadStore extends Accessor {
 
   @property({ readOnly: true })
   get invalidSelection() {
-    return 35 <= this.selectedObjectIds.length;
+    const count = this.selectedObjectIds.length;
+    return count < 1 || 35 <= count;
   }
 
   @property()
@@ -157,6 +158,7 @@ class DownloadStore extends Accessor {
         () => {
           this.appStore.sceneStore.lowPolyTrees.visible = false;
           this.appStore.originLayer.visible = true;
+          this.appStore.showStickyNote();
         },
       ),
       watch(
