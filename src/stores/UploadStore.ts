@@ -4,7 +4,7 @@ import {
   property,
   subclass,
 } from "@arcgis/core/core/accessorSupport/decorators";
-import { whenOnce } from "@arcgis/core/core/reactiveUtils";
+import { when, whenOnce } from "@arcgis/core/core/reactiveUtils";
 import FormTemplate from "@arcgis/core/form/FormTemplate";
 import { Polygon, SpatialReference } from "@arcgis/core/geometry";
 import { buffer } from "@arcgis/core/geometry/geometryEngine";
@@ -53,7 +53,7 @@ class UploadStore extends Accessor {
           symbol: new PolygonSymbol3D({
             symbolLayers: [
               new FillSymbol3DLayer({
-                material: { color: "red" },
+                material: { color: [120, 120, 120, 0.7] },
                 outline: {
                   color: "black",
                 },
@@ -102,7 +102,10 @@ class UploadStore extends Accessor {
       },
       snappingOptions: {
         enabled: true,
-        featureSources: [{ enabled: true, layer: this.siteLayer }],
+        featureSources: [
+          { enabled: true, layer: this.siteLayer },
+          { enabled: true, layer: this.appStore.originLayer },
+        ],
       },
     });
 
@@ -120,12 +123,21 @@ class UploadStore extends Accessor {
           editor.destroy();
         },
       },
+      when(
+        () => editor.viewModel.syncing,
+        () => {
+          this.appStore.sceneStore.lowPolyTrees.visible = true;
+          this.appStore.originLayer.visible = false;
+          this.siteLayer.visible = false;
+        },
+      ),
     ]);
   }
 
   private async initializeStore() {
     const view = this.appStore.sceneStore.view;
-    applySlide(view, 2);
+    await applySlide(view, 2);
+    this.appStore.sceneStore.lowPolyTrees.visible = false;
 
     this.addHandles(
       this.appStore.sceneStore.uploadLayer.on("edits", async (edits) => {
@@ -138,27 +150,15 @@ class UploadStore extends Accessor {
       }),
     );
 
-    /* Initialize area*/
+    /* Initialize area */
     const area = this.appStore.selectedArea;
     if (area) {
-      const sceneLayers = [
+      const buildingsLV = await view.whenLayerView(
         this.appStore.sceneStore.downloadLayer,
-        this.appStore.sceneStore.lowPolyTrees,
-      ];
-
-      const layerViews = await Promise.all(
-        sceneLayers.map((l) => view.whenLayerView(l)),
       );
-
-      layerViews.forEach(
-        (lv) =>
-          (lv.filter = new FeatureFilter({
-            // objectIds: [1406],
-            where: `${lv.layer.objectIdField} not in (1406)`,
-            // geometry: area,
-            // spatialRelationship: "disjoint",
-          })),
-      );
+      buildingsLV.filter = new FeatureFilter({
+        where: `${buildingsLV.layer.objectIdField} not in (1406)`,
+      });
     }
   }
 

@@ -21,6 +21,25 @@ import AppStore from "./AppStore";
 
 type DownloadStoreProperties = Pick<DownloadStore, "appStore">;
 
+function createSelectionGraphic(geometry?: Polygon) {
+  return new Graphic({
+    geometry,
+    symbol: new PolygonSymbol3D({
+      symbolLayers: [
+        new FillSymbol3DLayer({
+          material: { color: [255, 0, 0, 0.75] },
+          outline: {
+            color: "black",
+          },
+          pattern: new StylePattern3D({
+            style: "forward-diagonal",
+          }),
+        }),
+      ],
+    }),
+  });
+}
+
 @subclass()
 class DownloadStore extends Accessor {
   readonly type = ScreenType.Download;
@@ -250,22 +269,7 @@ class ExtentShape extends Accessor {
       spatialReference: initialExtent.spatialReference,
     });
 
-    this.graphic = new Graphic({
-      geometry: polygon,
-      symbol: new PolygonSymbol3D({
-        symbolLayers: [
-          new FillSymbol3DLayer({
-            material: { color: "red" },
-            outline: {
-              color: "black",
-            },
-            pattern: new StylePattern3D({
-              style: "forward-diagonal",
-            }),
-          }),
-        ],
-      }),
-    });
+    this.graphic = createSelectionGraphic(polygon);
   }
 
   @property()
@@ -434,7 +438,7 @@ class ExtentTool extends Accessor {
   }
 
   @property()
-  wipExtent = this.createWipExtentGraphic();
+  wipExtent = createSelectionGraphic();
 
   initialize() {
     const highlightHandle = this.highlightGeometry(() => this.polygon);
@@ -448,7 +452,7 @@ class ExtentTool extends Accessor {
             this.controlPointA = null;
             this.controlPointB = null;
             (this.wipExtent.layer as GraphicsLayer).remove(this.wipExtent);
-            this.wipExtent = this.createWipExtentGraphic();
+            this.wipExtent = createSelectionGraphic();
             this.sketchVMCreateHandle?.remove();
           }
         },
@@ -546,24 +550,6 @@ class ExtentTool extends Accessor {
           return;
         }
       }
-    });
-  }
-
-  private createWipExtentGraphic() {
-    return new Graphic({
-      symbol: new PolygonSymbol3D({
-        symbolLayers: [
-          new FillSymbol3DLayer({
-            material: { color: "red" },
-            outline: {
-              color: "black",
-            },
-            pattern: new StylePattern3D({
-              style: "forward-diagonal",
-            }),
-          }),
-        ],
-      }),
     });
   }
 }
