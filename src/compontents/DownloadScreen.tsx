@@ -26,28 +26,8 @@ const DownloadScreen = ({ store }: { store: DownloadStore }) => {
 };
 
 const DownloadPanel = ({ store }: { store: DownloadStore }) => {
-  if (store.tool.state === "idle") {
-    if (store.area) {
-      return [
-        <calcite-block open>
-          <calcite-label layout="inline">
-            <calcite-icon icon="urban-model" scale="m"></calcite-icon>
-            Selected features: 28
-          </calcite-label>
-        </calcite-block>,
-        <calcite-button
-          key="download-button"
-          slot="footer"
-          icon-start="download"
-          width="full"
-          appearance="solid"
-          href="./model.glb"
-          download="model.glb"
-        >
-          Download
-        </calcite-button>,
-      ];
-    } else {
+  switch (store.state) {
+    case "ready":
       return (
         <calcite-button
           key="select-button"
@@ -58,18 +38,38 @@ const DownloadPanel = ({ store }: { store: DownloadStore }) => {
           Select extent
         </calcite-button>
       );
-    }
-  } else {
-    return (
-      <calcite-button
-        key="cancel-button"
-        slot="footer"
-        appearance="outline-fill"
-        width="full"
-      >
-        Cancel
-      </calcite-button>
-    );
+    case "selecting":
+      return (
+        <calcite-button
+          key="cancel-button"
+          slot="footer"
+          appearance="outline-fill"
+          width="full"
+        >
+          Cancel
+        </calcite-button>
+      );
+    default:
+      return [
+        <calcite-block open>
+          <calcite-label layout="inline">
+            <calcite-icon icon="urban-model" scale="m"></calcite-icon>
+            Selected features: {store.selectedObjectIds.length}
+          </calcite-label>
+        </calcite-block>,
+        <calcite-button
+          key="download-button"
+          slot="footer"
+          icon-start="download"
+          width="full"
+          appearance="solid"
+          onclick={() => store.download()}
+          loading={store.state === "downloading"}
+          disabled={store.invalidSelection || store.state === "downloading"}
+        >
+          Download
+        </calcite-button>,
+      ];
   }
 };
 

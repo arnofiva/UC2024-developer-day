@@ -1,3 +1,4 @@
+import Color from "@arcgis/core/Color";
 import Graphic from "@arcgis/core/Graphic";
 import Accessor from "@arcgis/core/core/Accessor";
 import {
@@ -13,6 +14,7 @@ import { FillSymbol3DLayer, PolygonSymbol3D } from "@arcgis/core/symbols";
 import StylePattern3D from "@arcgis/core/symbols/patterns/StylePattern3D";
 import Sketch from "@arcgis/core/widgets/Sketch";
 import SketchViewModel from "@arcgis/core/widgets/Sketch/SketchViewModel";
+import { exportAsBinaryGLTF } from "../export";
 import { ScreenType } from "../interfaces";
 import { applySlide, ignoreAbortErrors } from "../utils";
 import AppStore from "./AppStore";
@@ -30,10 +32,34 @@ class DownloadStore extends Accessor {
   // buildingsLayerView: SceneLayerView;
 
   @property()
-  tool: ExtentTool;
+  get state(): "ready" | "selecting" | "selected" | "downloading" {
+    if (this.downloading) {
+      return "downloading";
+    } else if (this.tool.state !== "idle") {
+      return "selecting";
+    } else if (this.area) {
+      return "selected";
+    } else {
+      return "ready";
+    }
+  }
+
+  @property()
+  private tool: ExtentTool;
 
   @property({ aliasOf: "appStore.selectedArea" })
-  area: Geometry;
+  area: Geometry | null;
+
+  @property()
+  selectedObjectIds: number[] = [];
+
+  @property({ readOnly: true })
+  get invalidSelection() {
+    return 35 <= this.selectedObjectIds.length;
+  }
+
+  @property()
+  private downloading = false;
 
   constructor(props: DownloadStoreProperties) {
     super(props);
@@ -103,7 +129,10 @@ class DownloadStore extends Accessor {
       highlightGeometry,
     });
 
-    this.addHandles(
+    view.highlightOptions.haloOpacity = 0;
+    const defaultHighlightColor = view.highlightOptions.color;
+
+    this.addHandles([
       when(
         () => this.tool.state === "placing-a",
         () => {
@@ -111,7 +140,17 @@ class DownloadStore extends Accessor {
           this.appStore.originLayer.visible = true;
         },
       ),
-    );
+      watch(
+        () => this.invalidSelection,
+        (tooManyFeatures) => {
+          if (tooManyFeatures) {
+            view.highlightOptions.color = new Color("red");
+          } else {
+            view.highlightOptions.color = defaultHighlightColor;
+          }
+        },
+      ),
+    ]);
 
     this.addHandles({
       remove: () => {
@@ -124,6 +163,25 @@ class DownloadStore extends Accessor {
 
   start() {
     this.tool.start();
+  }
+
+  async download() {
+    if (
+      this.state !== "selected" ||
+      this.invalidSelection ||
+      this.area === null
+    ) {
+      return;
+    }
+
+    this.downloading = true;
+    await exportAsBinaryGLTF(
+      this.appStore.sceneStore,
+      this.area.extent,
+      this.selectedObjectIds,
+    );
+
+    this.downloading = false;
   }
 
   private currentHighlight: IHandle = { remove: () => {} };
@@ -146,10 +204,12 @@ class DownloadStore extends Accessor {
     const { features } = await layerView.queryFeatures(query);
     this.removeHighlight();
 
+    this.selectedObjectIds = features.map((f) => f.getObjectId());
     this.currentHighlight = layerView.highlight(features);
   });
 
   removeHighlight() {
+    this.selectedObjectIds = [];
     this.currentHighlight.remove();
   }
 
