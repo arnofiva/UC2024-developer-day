@@ -29,7 +29,7 @@ In order to use the `gh-pages` approach, see the following instructions. Make su
 
 ## Deployment
 
-The project uses a [GitHub Action](https://github.com/features/actions) script (`./github/workflows/publish.yml`) to build and publish the app to [GitHub Pages](https://pages.github.com/).
+The project uses a [GitHub Action](https://github.com/features/actions) script (see [`publish.yml`](./github/workflows/publish.yml)) to build and publish the app to [GitHub Pages](https://pages.github.com/).
 
 ## Licensing
 
