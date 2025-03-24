@@ -17,8 +17,7 @@ class RealisticStore extends Accessor {
 
   constructor(props: RealisticStoreProperties) {
     super(props);
-
-    applySlide(props.view, 3);
+    applySlide(props.view, "App: Realistic Visualization");
   }
 }
 

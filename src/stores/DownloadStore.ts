@@ -86,7 +86,7 @@ class DownloadStore extends Accessor {
 
     const view = props.appStore.sceneStore.view;
 
-    applySlide(view, 2);
+    applySlide(view, "App: Hürlimann Schematic");
 
     const sketchLayer = new GraphicsLayer({
       title: "Download selection",

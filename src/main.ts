@@ -14,7 +14,7 @@ console.log(`Using ArcGIS Maps SDK for JavaScript v${kernel.fullVersion}`);
 
 const params = new URLSearchParams(document.location.search.slice(1));
 
-const webSceneId = params.get("webscene") || "c1e17338b7324a478f65d3507f05b3dd";
+const webSceneId = params.get("webscene") || "30bd624de45247dfa53320a8213729a4";
 
 const skipPreload = params.has("skipPreload");
 

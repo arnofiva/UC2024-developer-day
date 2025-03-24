@@ -29,12 +29,14 @@ export async function ignoreAbortErrors<T>(
 /**
  * Apply a slide by moving to the viewpoint before changing layer visibility.
  */
-export async function applySlide(view: SceneView, index: number) {
+export async function applySlide(view: SceneView, title: string) {
   const map = view.map as WebScene;
   if (map.presentation) {
     const slides = map.presentation.slides;
-    if (0 <= index && index < slides.length) {
-      const slide = slides.getItemAt(index);
+    const slide = slides.find(
+      ({ title: slideTitle }) => slideTitle.text === title,
+    );
+    if (slide) {
       try {
         await view.goTo(slide.viewpoint);
       } finally {

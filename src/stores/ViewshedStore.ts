@@ -39,7 +39,7 @@ class ViewshedStore extends Accessor {
 
     const view = props.view;
 
-    applySlide(view, 4);
+    applySlide(view, "App: Viewshed Viewpoint");
 
     view.analyses.add(this.viewshedAnalysis);
 

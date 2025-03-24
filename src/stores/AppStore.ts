@@ -179,9 +179,9 @@ class AppStore extends Accessor {
 
     await map.loadAll();
 
-    this.sceneStore.uploadLayer.definitionExpression = `name = '${this.deviceId}'`;
+    this.sceneStore.uploadLayer.definitionExpression = `Name = '${this.deviceId}'`;
     const field = this.sceneStore.uploadLayer.fields.find(
-      (f) => f.name === "name",
+      (f) => f.name === "Name",
     )!;
     field.defaultValue = this.deviceId;
 
