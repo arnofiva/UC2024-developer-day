@@ -86,7 +86,7 @@ class AppStore extends Accessor {
     visible: false,
   });
 
-  private modifications: SceneModifications;
+  private modifications: SceneModifications | nullish;
 
   @property()
   get currentScreenStore() {
@@ -175,7 +175,9 @@ class AppStore extends Accessor {
     const view = this.sceneStore.view;
     const map = this.sceneStore.map;
 
-    this.title = document.title = map.portalItem.title;
+    if (map.portalItem?.title) {
+      this.title = document.title = map.portalItem.title;
+    }
 
     await map.loadAll();
 
@@ -205,7 +207,7 @@ class AppStore extends Accessor {
         slide.applyTo(view, { animate: false });
         await whenOnce(() => !view.updating);
       }
-      slides.getItemAt(0).applyTo(view, { animate: false });
+      slides.getItemAt(0)?.applyTo(view, { animate: false });
     }
 
     this._loading = "done";

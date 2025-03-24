@@ -28,7 +28,7 @@ class UserStore extends Accessor {
   }
 
   @property()
-  user: PortalUser | null;
+  user: PortalUser | nullish;
 
   constructor() {
     super();

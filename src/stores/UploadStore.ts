@@ -146,7 +146,7 @@ class UploadStore extends Accessor {
           ? edits.addedFeatures
           : edits.updatedFeatures;
         if (changed.length) {
-          this.updateFootprint(changed[0].objectId);
+          this.updateFootprint(changed[0].objectId!);
         }
       }),
     );
@@ -175,9 +175,10 @@ class UploadStore extends Accessor {
     const { features } = await uploadLayer.queryFeatures(query);
 
     const footprint = features[0].geometry;
-    const bufferedFootprint = buffer(footprint, 1.2, "meters") as Polygon;
-
-    this.appStore.uploadedFootprint = bufferedFootprint;
+    if (footprint) {
+      const bufferedFootprint = buffer(footprint, 1.2, "meters") as Polygon;
+      this.appStore.uploadedFootprint = bufferedFootprint;
+    }
   }
 }
 

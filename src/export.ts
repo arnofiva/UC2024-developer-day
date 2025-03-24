@@ -1,4 +1,3 @@
-import { Extent, Mesh, Point } from "@arcgis/core/geometry";
 import * as projection from "@arcgis/core/geometry/projection";
 import MeshGeoreferencedVertexSpace from "@arcgis/core/geometry/support/MeshGeoreferencedVertexSpace";
 import MeshLocalVertexSpace from "@arcgis/core/geometry/support/MeshLocalVertexSpace";
@@ -8,6 +7,8 @@ import SceneLayer from "@arcgis/core/layers/SceneLayer";
 import SceneStore from "./stores/SceneStore";
 
 import Color from "@arcgis/core/Color";
+import { Extent, Point } from "@arcgis/core/geometry";
+import Mesh from "@arcgis/core/geometry/Mesh";
 import MeshComponent from "@arcgis/core/geometry/support/MeshComponent";
 import MeshMaterialMetallicRoughness from "@arcgis/core/geometry/support/MeshMaterialMetallicRoughness";
 import * as symbolUtils from "@arcgis/core/symbols/support/symbolUtils";
@@ -46,7 +47,7 @@ async function mergeSliceMeshes({
       : MeshGeoreferencedVertexSpace;
 
   const vertexSpace = new VertexSpace({
-    origin: [projectedOrigin.x, projectedOrigin.y, projectedOrigin.z],
+    origin: [projectedOrigin.x, projectedOrigin.y, projectedOrigin.z || 0],
   });
 
   const meshPromises = buildings
@@ -58,12 +59,12 @@ async function mergeSliceMeshes({
 
   if (includeOriginMarker) {
     const zmax = buildings.reduce(
-      (max, next) => (next.extent.zmax > max ? next.extent.zmax : max),
-      ground.extent.zmax,
+      (max, next) => (next.extent.zmax! > max ? next.extent.zmax! : max),
+      ground.extent.zmax!,
     );
     const zmin = buildings.reduce(
-      (min, next) => (min > next.extent.zmin ? next.extent.zmin : min),
-      ground.extent.zmin,
+      (min, next) => (min > next.extent.zmin! ? next.extent.zmin! : min),
+      ground.extent.zmin!,
     );
     const height = zmax - zmin;
 
@@ -79,12 +80,12 @@ async function mergeSliceMeshes({
     meshes.filter((mesh): mesh is Mesh => mesh != null),
   );
 
-  return slice;
+  return slice!;
 }
 
 function addComponent(mesh: Mesh, name: string, color: Color) {
   let component: MeshComponent;
-  if (mesh.components.length) {
+  if (mesh.components?.length) {
     component = mesh.components[0].clone();
     mesh.removeComponent(mesh.components[0]);
   } else {
@@ -97,6 +98,7 @@ function addComponent(mesh: Mesh, name: string, color: Color) {
   component.name = name;
 
   mesh.addComponent(component);
+  return component;
 }
 
 async function queryBuildings(layer: SceneLayer, objectIds: number[]) {
@@ -114,8 +116,9 @@ async function queryBuildings(layer: SceneLayer, objectIds: number[]) {
         symbolUtils.getDisplayedColor(feature, { renderer }),
         mesh.load(),
       ]);
-
-      addComponent(mesh, `building-${feature.getObjectId()}`, color);
+      if (color) {
+        addComponent(mesh, `building-${feature.getObjectId()}`, color);
+      }
 
       return mesh;
     }),
@@ -128,8 +131,12 @@ async function queryGround(ground: Ground, extent: Extent) {
   });
 
   await elevation.load();
-  addComponent(elevation, "ground", new Color([200, 200, 200]));
-  elevation.components[0].name = "world-elevation";
+  const component = addComponent(
+    elevation,
+    "ground",
+    new Color([200, 200, 200]),
+  );
+  component.name = "world-elevation";
 
   return elevation;
 }

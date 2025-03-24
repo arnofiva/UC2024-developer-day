@@ -24,7 +24,10 @@ const Loader = ({ store }: { store: AppStore }) => {
 
 const Description = ({ webScene }: { webScene: WebScene }) => {
   const bind = (div: HTMLDivElement) => {
-    div.innerHTML = webScene.portalItem.description;
+    const description = webScene.portalItem?.description;
+    if (description) {
+      div.innerHTML = description;
+    }
   };
 
   return <div afterCreate={bind}></div>;

@@ -23,8 +23,7 @@ const NavigationBar = ({ store }: { store: AppStore }) => {
         description="ArcGIS Maps SDK for JavaScript"
         thumbnail="./icon-64.svg"
         onclick={() => {
-          const portalItem = store.sceneStore.map.portalItem;
-          const itemPageUrl = portalItem.itemPageUrl;
+          const itemPageUrl = store.sceneStore.map.portalItem?.itemPageUrl;
           if (itemPageUrl) {
             window.open(itemPageUrl, "new");
           }

@@ -187,22 +187,22 @@ class DownloadStore extends Accessor {
   }
 
   async download() {
-    if (
-      this.state !== "selected" ||
-      this.invalidSelection ||
-      this.area === null
-    ) {
+    if (this.state !== "selected" || this.invalidSelection) {
       return;
     }
 
-    this.downloading = true;
-    await exportAsBinaryGLTF(
-      this.appStore.sceneStore,
-      this.area.extent,
-      this.selectedObjectIds,
-    );
+    const extent = this.area?.extent;
 
-    this.downloading = false;
+    if (extent) {
+      this.downloading = true;
+      await exportAsBinaryGLTF(
+        this.appStore.sceneStore,
+        extent,
+        this.selectedObjectIds,
+      );
+
+      this.downloading = false;
+    }
   }
 
   private currentHighlight: IHandle = { remove: () => {} };
@@ -225,7 +225,7 @@ class DownloadStore extends Accessor {
     const { features } = await layerView.queryFeatures(query);
     this.removeHighlight();
 
-    this.selectedObjectIds = features.map((f) => f.getObjectId());
+    this.selectedObjectIds = features.map((f) => f.getObjectId() as number);
     this.currentHighlight = layerView.highlight(features);
   });
 
