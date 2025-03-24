@@ -202,7 +202,7 @@ class AppStore extends Accessor {
     if (!this.skipPreload) {
       this._loading = "preload-slides";
 
-      const slides = map.presentation.slides;
+      const slides = map.presentation.slides.filter((slide) => slide.hidden);
       for (const slide of slides) {
         slide.applyTo(view, { animate: false });
         await whenOnce(() => !view.updating);
