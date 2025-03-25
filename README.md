@@ -1,4 +1,10 @@
-# ArcGIS Maps SDK for JavaScript template
+# UC2024: Urban change over time
+
+This app demonstrates how you can use 3D object layers to visualize and apply changes in a system of record.
+
+![Download 3D Buildings and Terrain](https://www.arcgis.com/sharing/content/items/30bd624de45247dfa53320a8213729a4/resources/screenshots/02-download-3d-data.png)
+
+See the [description](./DESCRIPTION.md) for more info on this demo app.
 
 ## Prerequisites
 
