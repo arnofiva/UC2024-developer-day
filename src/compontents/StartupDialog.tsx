@@ -1,11 +1,12 @@
 import { tsx } from "@arcgis/core/widgets/support/widget";
 
-import WebScene from "@arcgis/core/WebScene";
 import "@esri/calcite-components/dist/components/calcite-button";
 import "@esri/calcite-components/dist/components/calcite-checkbox";
 import "@esri/calcite-components/dist/components/calcite-dialog";
 import "@esri/calcite-components/dist/components/calcite-label";
 import AppStore from "../stores/AppStore";
+
+import splash from "../../DESCRIPTION.md";
 
 const Loader = ({ store }: { store: AppStore }) => {
   switch (store.loading) {
@@ -22,12 +23,9 @@ const Loader = ({ store }: { store: AppStore }) => {
   }
 };
 
-const Description = ({ webScene }: { webScene: WebScene }) => {
+const Description = () => {
   const bind = (div: HTMLDivElement) => {
-    const description = webScene.portalItem?.description;
-    if (description) {
-      div.innerHTML = description;
-    }
+    div.innerHTML = splash;
   };
 
   return <div afterCreate={bind}></div>;
@@ -35,6 +33,24 @@ const Description = ({ webScene }: { webScene: WebScene }) => {
 
 const StartupDialog = ({ store }: { store: AppStore }) => {
   const loading = store.loading !== "done";
+
+  const itemControl = !loading && store.sceneStore.map.portalItem?.itemControl;
+  const canUpdate = itemControl === "admin" || itemControl === "update";
+
+  let updatingWebScene = false;
+  async function updateWebScene() {
+    updatingWebScene = true;
+
+    try {
+      const portalItem = store.sceneStore.map.portalItem;
+      if (portalItem) {
+        portalItem.description = splash;
+        await portalItem.update();
+      }
+    } finally {
+      updatingWebScene = false;
+    }
+  }
 
   return (
     <calcite-dialog
@@ -51,9 +67,24 @@ const StartupDialog = ({ store }: { store: AppStore }) => {
         {loading ? (
           <Loader store={store}></Loader>
         ) : (
-          <Description webScene={store.sceneStore.map}></Description>
+          <Description></Description>
         )}
       </div>
+
+      {canUpdate
+        ? [
+            <calcite-button
+              key="update-web-scene"
+              disabled={updatingWebScene}
+              loading={updatingWebScene}
+              slot="footer-start"
+              kind="neutral"
+              onclick={updateWebScene}
+            >
+              Update web scene
+            </calcite-button>,
+          ]
+        : []}
 
       {loading
         ? []
@@ -69,6 +100,7 @@ const StartupDialog = ({ store }: { store: AppStore }) => {
               Hide on startup
             </calcite-label>,
             <calcite-button
+              key="close-startup-dialog"
               disabled={loading}
               slot="footer-end"
               onclick={() => {

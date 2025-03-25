@@ -41,6 +41,7 @@ const NavigationBar = ({ store }: { store: AppStore }) => {
       {user ? (
         <calcite-navigation-user
           slot="user"
+          onclick={() => userStore?.signOut()}
           thumbnail={user.thumbnailUrl}
           full-name={user.fullName}
           username={user.username}
