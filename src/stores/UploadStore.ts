@@ -137,7 +137,7 @@ class UploadStore extends Accessor {
 
   private async initializeStore() {
     const view = this.appStore.sceneStore.view;
-    applySlide(view, "App: Hürlimann Schematic");
+    await applySlide(view, "App: Hürlimann Schematic");
     this.appStore.sceneStore.lowPolyTrees.visible = false;
 
     this.addHandles(
